@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 void main() {
   runApp(MyApp());
@@ -55,6 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView.builder(
               itemCount: _pastEntries.length,
               itemBuilder: (context, index) {
+                var imagePath = _pastEntries[index]['imagePath'];
                 return Container(
                   decoration: BoxDecoration(
                     border: Border(
@@ -62,6 +65,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   child: ListTile(
+                    leading: imagePath != null
+                      ? Image.file(File(imagePath))
+                      : null,
                     title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                   ),
@@ -88,12 +94,32 @@ class SecondPage extends StatefulWidget {
 class _SecondPageState extends State<SecondPage> {
   final TextEditingController _teacherNameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image;
 
   @override
   void dispose() {
     _teacherNameController.dispose();
     _classController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState((){
+          _image = pickedFile;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('画像の選択に失敗しました。'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget build(BuildContext context) {
@@ -113,15 +139,12 @@ class _SecondPageState extends State<SecondPage> {
             SizedBox(height: 20), // 最初のテキ���トと入力フィールド間のスペースを追加
             Center(
               child: ElevatedButton(
-                onPressed: () {final snackBar = SnackBar(
-                      content: Text('未実装です。'),
-                      duration: Duration(seconds: 2),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                  },
-                child: Text('画像を選択（できるようになるはず）'),
+                onPressed: _pickImage,
+                child: Text('画像を選択'),
               ),
-              ),
+            ),
+            if (_image != null)
+              Image.file(File(_image!.path)),
             SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペースを追加
             Text('講師の名前'),
             TextField(
@@ -144,14 +167,15 @@ class _SecondPageState extends State<SecondPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty) {
+                  if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty && _image != null) {
                     Navigator.pop(context, {
                       'teacherName': _teacherNameController.text,
-                      'className': _classController.text
+                      'className': _classController.text,
+                      'imagePath': _image!.path
                     });
                   } else {
                     final snackBar = SnackBar(
-                      content: Text('講師名と授業名の両方を入力してください。'),
+                      content: Text('講師名、授業名、画像のすべてを入力してください。'),
                       duration: Duration(seconds: 2),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
