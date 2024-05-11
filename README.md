@@ -1,4 +1,4 @@
-# namer_app
+# kakomon_kanri_app
 
 A new Flutter project.
 
