@@ -1,6 +1,7 @@
 # kakomon_kanri_app
 
-A new Flutter project.
+過去問管理を行えるプログラムです。
+下は後々追加していきたいなぁ（遠い目）
 
 ## Getting Started
 
