@@ -122,6 +122,24 @@ class _SecondPageState extends State<SecondPage> {
     }
   }
 
+  Future<void> _pickImageCamera() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
+      if (pickedFile != null) {
+        setState((){
+          _image = pickedFile;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('画像の選択に失敗しました。'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -136,11 +154,20 @@ class _SecondPageState extends State<SecondPage> {
             Center(
               child: Text('過去問を登録してください'),
             ),
-            SizedBox(height: 20), // 最初のテキ���トと入力フィールド間のスペースを追加
+            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペースを追加
             Center(
-              child: ElevatedButton(
-                onPressed: _pickImage,
-                child: Text('画像を選択'),
+              child: Column(
+                children: [
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    child: Text('画像を選択'),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: _pickImageCamera,
+                    child: Text('カメラで撮影'),
+                  ),
+                ],
               ),
             ),
             if (_image != null)
@@ -184,8 +211,6 @@ class _SecondPageState extends State<SecondPage> {
                 child: Text('保存'),
               ),
             ),
-            Text('講師名：${_teacherNameController.text}'),
-            Text('授業名：${_classController.text}'),
           ],
         ),
       ),
