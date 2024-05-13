@@ -1,17 +1,13 @@
 # kakomon_kanri_app
 
 過去問管理を行えるプログラムです。
-下は後々追加していきたいなぁ（遠い目）
 
-## Getting Started
+## 追加予定の機能
 
-This project is a starting point for a Flutter application.
+~~カメラや画像の挿入~~(済）
 
-A few resources to get you started if this is your first Flutter project:
+評価機能の実装
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+データを保持する機能の実装
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+クラウドでデータの共有機能の実装
