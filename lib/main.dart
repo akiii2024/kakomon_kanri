@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(MyApp());
@@ -30,6 +29,33 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
 
+  @override
+  void initState() {
+    super.initState();
+    _loadPastEntries();
+  }
+
+  void _loadPastEntries() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? entries = prefs.getStringList('pastEntries');
+    if (entries != null) {
+      setState(() {
+        _pastEntries = entries.map((entry) {
+          List<String> parts = entry.split('|');
+          return {'teacherName': parts[0], 'className': parts[1]};
+        }).toList();
+      });
+    }
+  }
+
+  void _savePastEntries() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> entries = _pastEntries.map((entry) {
+      return '${entry['teacherName']}|${entry['className']}';
+    }).toList();
+    await prefs.setStringList('pastEntries', entries);
+  }
+
   void _navigateAndDisplaySelection(BuildContext context) async {
     final result = await Navigator.push(
       context,
@@ -39,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result != null) {
       setState(() {
         _pastEntries.add(result); // リストに結果を追加
+        _savePastEntries(); // 保存
       });
     }
   }
@@ -57,7 +84,6 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView.builder(
               itemCount: _pastEntries.length,
               itemBuilder: (context, index) {
-                var imagePath = _pastEntries[index]['imagePath'];
                 return Container(
                   decoration: BoxDecoration(
                     border: Border(
@@ -65,9 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   child: ListTile(
-                    leading: imagePath != null
-                      ? Image.file(File(imagePath))
-                      : null,
                     title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                   ),
@@ -94,50 +117,12 @@ class SecondPage extends StatefulWidget {
 class _SecondPageState extends State<SecondPage> {
   final TextEditingController _teacherNameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
-  XFile? _image;
 
   @override
   void dispose() {
     _teacherNameController.dispose();
     _classController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState((){
-          _image = pickedFile;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('画像の選択に失敗しました。'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
-  Future<void> _pickImageCamera() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.camera);
-      if (pickedFile != null) {
-        setState((){
-          _image = pickedFile;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('画像の選択に失敗しました。'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   Widget build(BuildContext context) {
@@ -154,24 +139,6 @@ class _SecondPageState extends State<SecondPage> {
             Center(
               child: Text('過去問を登録してください'),
             ),
-            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペースを追加
-            Center(
-              child: Column(
-                children: [
-                  ElevatedButton(
-                    onPressed: _pickImage,
-                    child: Text('画像を選択'),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: _pickImageCamera,
-                    child: Text('カメラで撮影'),
-                  ),
-                ],
-              ),
-            ),
-            if (_image != null)
-              Image.file(File(_image!.path)),
             SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペースを追加
             Text('講師の名前'),
             TextField(
@@ -194,15 +161,14 @@ class _SecondPageState extends State<SecondPage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty && _image != null) {
+                  if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty) {
                     Navigator.pop(context, {
                       'teacherName': _teacherNameController.text,
                       'className': _classController.text,
-                      'imagePath': _image!.path
                     });
                   } else {
                     final snackBar = SnackBar(
-                      content: Text('講師名、授業名、画像のすべてを入力してください。'),
+                      content: Text('講師名と授業名の両方を入力してください。'),
                       duration: Duration(seconds: 2),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -214,7 +180,7 @@ class _SecondPageState extends State<SecondPage> {
           ],
         ),
       ),
-      ),
+    )
     );
   }
 }
