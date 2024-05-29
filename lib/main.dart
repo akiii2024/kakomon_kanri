@@ -55,6 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
     box.put('pastEntries', _pastEntries);
   }
 
+  void _deleteEntry(int index){
+    setState(() {
+      _pastEntries.removeAt(index);
+      _savePastEntries();
+    });
+  }
+
   void _navigateAndDisplaySelection(BuildContext context) async {
     final result = await Navigator.push(
       context,
@@ -96,6 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       : null,
                     title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => _deleteEntry(index),
+                    ),
                   ),
                 );
               },
