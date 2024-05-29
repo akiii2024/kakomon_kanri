@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:io';
 import 'second_page.dart';
+import 'setting_page.dart';
+import 'detail_page.dart';
 
 const boxName = "aBox";
 
@@ -55,11 +57,58 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _onEntryTap(int index){
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => DetailsPage(entry: _pastEntries[index])),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Main Page'),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text('Menu',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            ),
+            ListTile(
+              title: Text('Main Menu'),
+              onTap: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('未実装'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              title: Text('ライブラリ'),
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              title: Text('設定'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => SettingPage()),
+                );
+              },
+            ),
+          ]
+        )
       ),
       body: _pastEntries.isEmpty
           ? Center(child: Text('過去の入力はありません'))
@@ -135,6 +184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         }
                       }
                     ),
+                    onTap: () => _onEntryTap(index),
                   ),
                 );
               },

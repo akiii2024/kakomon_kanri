@@ -1,0 +1,33 @@
+// lib/components/details_page.dart
+import 'package:flutter/material.dart';
+import 'dart:io';
+
+class DetailsPage extends StatelessWidget {
+  final Map<String, String> entry;
+
+  DetailsPage({required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('詳細ページ'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (entry['imagePath'] != null) 
+              Image.file(File(entry['imagePath']!)),
+            Text('講師名：${entry['teacherName']}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('授業名：${entry['className']}', style: TextStyle(fontSize: 20)),
+            // 他の詳細情報をここに追加
+          ],
+        ),
+      ),
+    );
+  }
+}
+
