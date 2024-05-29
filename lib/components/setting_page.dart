@@ -10,7 +10,7 @@ class SettingPage extends StatelessWidget {
       body: ListView(
         children: <Widget>[
           ListTile(
-            title: Text('デバイス情報'),
+            title: Text('オプション１'),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () {
               //Navigator.push(
