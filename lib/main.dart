@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -105,7 +106,28 @@ class _MyHomePageState extends State<MyHomePage> {
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                     trailing: IconButton(
                       icon: Icon(Icons.delete),
-                      onPressed: () => _deleteEntry(index),
+                      onPressed: () => showDialog(
+                        context: context,
+                        builder: (_) => CupertinoAlertDialog(
+                          title: Text("確認"),
+                          content: Text("本当に削除してよろしいですか？"),
+                          actions:[
+                            CupertinoDialogAction(
+                              child: Text("いいえ"),
+                              isDestructiveAction: false,
+                              onPressed: (){
+                                Navigator.of(context).pop();
+                              }),
+                              CupertinoDialogAction(
+                                child: Text("はい"),
+                                isDestructiveAction: true,
+                                onPressed: (){
+                                  _deleteEntry(index);
+                                },
+                                )
+                          ],
+                        )
+                      )
                     ),
                   ),
                 );
