@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+const boxName = "aBox";
+
+void main() async{
+  await Hive.initFlutter();
+  await Hive.openBox(boxName);
   runApp(MyApp());
 }
 
@@ -29,6 +34,26 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
+  final Box box = Hive.box(boxName);
+
+  @override
+  void initState(){
+    super.initState();
+    _loadPastEntries();
+  }
+
+  void _loadPastEntries(){
+    final entries = box.get('pastEntries', defaultValue: []);
+    setState((){
+      _pastEntries = List<Map<String, String>>.from(
+        (entries as List).map((item) => Map<String, String>.from(item))
+    );
+    });
+  }
+
+  void _savePastEntries(){
+    box.put('pastEntries', _pastEntries);
+  }
 
   void _navigateAndDisplaySelection(BuildContext context) async {
     final result = await Navigator.push(
@@ -38,7 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (result != null) {
       setState(() {
-        _pastEntries.add(result); // リストに結果を追加
+        _pastEntries.add(result);
+        _savePastEntries(); // リストに結果を追加
       });
     }
   }
