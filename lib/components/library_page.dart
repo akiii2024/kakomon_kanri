@@ -1,22 +1,23 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter/cupertino.dart';
 import 'dart:io';
 import 'second_page.dart';
-import 'setting_page.dart';
+
 import 'detail_page.dart';
-import 'library_page.dart';
 
 const boxName = "aBox";
 
-class MyHomePage extends StatefulWidget {
+class LibraryPage extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _LibraryPageState createState() => _LibraryPageState();
+
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _LibraryPageState extends State<LibraryPage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
+
 
   @override
   void initState(){
@@ -69,44 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('あなたへのおすすめ'),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text('Menu',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            ),
-            ListTile(
-              title: Text('Main Page'),
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            ListTile(
-              title: Text('保存した過去問'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LibraryPage()),
-                );
-              },
-
-            ),
-            ListTile(
-              title: Text('設定'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => SettingPage()),
-                );
-              },
-            ),
-          ]
-        )
+        title: Text('あなたの保存した過去問'),
       ),
       body: _pastEntries.isEmpty
           ? Center(child: Text('過去の入力はありません'))
@@ -127,12 +91,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     leading: imagePath != null
                       ? Image.file(File(imagePath))
                       : null,
-                    title: Text('講師名：${_pastEntries[index]['teacherName']}'),
-                    subtitle: Text('授業名：${_pastEntries[index]['className']}'),
+                    title: Text('講師名: ${_pastEntries[index]["teacherName"]}'),
+                    subtitle: Text('教室名: ${_pastEntries[index]["schoolName"]}'),
                     trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        if(Platform.isAndroid){
+                    icon: Icon(Icons.delete),
+                    onPressed: (() {
+                      if(Platform.isAndroid){
                           showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
@@ -182,6 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         }
                       }
                     ),
+                    ),
                     onTap: () => _onEntryTap(index),
                   ),
                 );
@@ -189,11 +154,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateAndDisplaySelection(context),
-        tooltip: '過去問の追加',
-        child: Icon(Icons.add),
       ),
     );
   }

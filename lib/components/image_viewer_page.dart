@@ -12,6 +12,8 @@ class ImageViewPage extends StatelessWidget{
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent, // ステータスバーを透明に設定
       statusBarIconBrightness: Brightness.dark // アイコンの明るさを設定
+
+      
     ));
 
     return Scaffold(
