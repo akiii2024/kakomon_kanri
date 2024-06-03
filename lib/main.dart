@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'components/home_page.dart';
+import 'components/setting_sub_page.dart';
+
 
 void main() async{
   await Hive.initFlutter();
   await Hive.openBox(boxName);
+  await Hive.openBox(boxName2);
   runApp(MyApp());
 }
 

@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'setting_sub_page.dart';
 
-class SettingPage extends StatelessWidget {
+
+
+class SettingPage extends StatefulWidget {
+  @override
+  _SettingPageState createState() => _SettingPageState();
+}
+
+class _SettingPageState extends State<SettingPage> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -13,14 +22,10 @@ class SettingPage extends StatelessWidget {
             title: Text('履修科目の登録'),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('オプション1が選択されました'),
-                ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingSubPage()),
               );
-              //MaterialPageRoute(builder: (context) => DeviceAndPackageInfoSampleScreen()),
-
-              //);
             },
           ),
           ListTile(
