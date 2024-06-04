@@ -18,10 +18,24 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
 
+
   @override
   void initState(){
     super.initState();
     _loadPastEntries();
+    _initializePastEntries();
+  }
+
+  void _initializePastEntries(){
+    if(_pastEntries.isEmpty){
+    _pastEntries.add({
+      'teacherName': '講師名',
+      'className': '授業名',
+      'imagePath': 'assets/images/card_after_training.png',
+      'dataSource': 'assets/images/card_after_training.png',
+    });
+    _savePastEntries();
+    }
   }
 
   void _loadPastEntries(){
@@ -125,7 +139,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   child: ListTile(
                     leading: imagePath != null
-                      ? Image.file(File(imagePath))
+                      ?(imagePath.startsWith('assets/images/')
+                        ? Image.asset(imagePath)
+                        : Image.file(File(imagePath)))
                       : null,
                     title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),

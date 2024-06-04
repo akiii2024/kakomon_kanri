@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'setting_sub_page.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 
 
@@ -29,15 +30,22 @@ class _SettingPageState extends State<SettingPage> {
             },
           ),
           ListTile(
-            title: Text('オプション2（未実装）'),
+            title: Text('データの初期化'),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () {
+            Hive.box('aBox').clear().then((_) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('オプション2が選択されました'),
+                  content: Text('データが削除されました'),
                 ),
               );
-              // オプション2の処理
+            }).catchError((error) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('データ削除中にエラーが発生しました: $error'),
+                ),
+              );
+            });
             },
           ),
           ListTile(

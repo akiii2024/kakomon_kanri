@@ -114,7 +114,8 @@ class _SecondPageState extends State<SecondPage> {
                     Navigator.pop(context, {
                       'teacherName': _teacherNameController.text,
                       'className': _classController.text,
-                      'imagePath': _image!.path
+                      'imagePath': _image!.path,
+                      'dataSource': 'user',
                     });
                   } else {
                     final snackBar = SnackBar(

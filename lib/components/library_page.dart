@@ -68,11 +68,13 @@ class _LibraryPageState extends State<LibraryPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<Map<String, String>> userEntries = _pastEntries.where((item) => item['dataSource'] == 'user').toList();
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('あなたの保存した過去問'),
       ),
-      body: _pastEntries.isEmpty
+      body: userEntries.isEmpty
           ? Center(child: Text('過去の入力はありません'))
           : Column(
         children: <Widget>[
@@ -80,7 +82,7 @@ class _LibraryPageState extends State<LibraryPage> {
             child: ListView.builder(
               itemCount: _pastEntries.length,
               itemBuilder: (context, index) {
-                var imagePath = _pastEntries[index]['imagePath'];
+                var imagePath = userEntries[index]['imagePath'];
                 return Container(
                   decoration: BoxDecoration(
                     border: Border(
@@ -91,8 +93,8 @@ class _LibraryPageState extends State<LibraryPage> {
                     leading: imagePath != null
                       ? Image.file(File(imagePath))
                       : null,
-                    title: Text('講師名: ${_pastEntries[index]["teacherName"]}'),
-                    subtitle: Text('教室名: ${_pastEntries[index]["schoolName"]}'),
+                    title: Text('講師名: ${userEntries[index]["teacherName"]}'),
+                    subtitle: Text('授業名: ${userEntries[index]["className"]}'),
                     trailing: IconButton(
                     icon: Icon(Icons.delete),
                     onPressed: (() {

@@ -20,7 +20,9 @@ class ImageViewPage extends StatelessWidget{
 
       body: Center(
         child: InteractiveViewer(
-          child: Image.file(File(entry['imagePath']!)),
+          child: entry['imagePath'].startsWith('assets/images/')
+          ? Image.asset(entry['imagePath'])
+          : Image.file(File(entry['imagePath']!)),
         ),
 
       ),
