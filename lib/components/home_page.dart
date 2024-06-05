@@ -6,6 +6,7 @@ import 'second_page.dart';
 import 'setting_page.dart';
 import 'detail_page.dart';
 import 'library_page.dart';
+import '../data/user_id.dart';
 
 const boxName = "aBox";
 
@@ -17,6 +18,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
+  String userId = UserID.currentUserId;
+  String userName = UserID.currentUserName;
 
 
   @override
@@ -28,12 +31,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _initializePastEntries(){
     if(_pastEntries.isEmpty){
-    _pastEntries.add({
-      'teacherName': '講師名',
-      'className': '授業名',
-      'imagePath': 'assets/images/card_after_training.png',
-      'dataSource': 'assets/images/card_after_training.png',
-    });
+    _pastEntries.addAll([
+      //{
+      //'teacherName': '講師名',
+      //'className': '授業名',
+      //'imagePath': 'assets/images/card_after_training.png',
+      //'dataSource': 'assets',
+      //},
+      {
+      'teacherName': '田中先生',
+      'className': '英語',
+      'imagePath': 'assets/images/en_example.jpg',
+      'dataSource': 'assets',
+      },
+      {
+      'teacherName': '山田先生',
+      'className': '国語',
+      'imagePath': 'assets/images/jp_example.jpg',
+      'dataSource': 'assets',
+      },
+      {
+      'teacherName': '中田先生',
+      'className': '数学',
+      'imagePath': 'assets/images/math_example.jpg',
+      'dataSource': 'assets',
+      },
+    ]);
     _savePastEntries();
     }
   }
@@ -88,13 +111,10 @@ class _MyHomePageState extends State<MyHomePage> {
       drawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
-              child: Text('Menu',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            UserAccountsDrawerHeader(
+              accountName: Text(userName),
+              accountEmail: Text(userId),
+              currentAccountPicture: Icon(Icons.person),
             ),
             ListTile(
               title: Text('Main Page'),

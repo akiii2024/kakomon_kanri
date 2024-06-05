@@ -128,19 +128,19 @@ class _LibraryPageState extends State<LibraryPage> {
                               content: Text("本当に削除してよろしいですか？"),
                               actions: [
                                 CupertinoDialogAction(
-                                  child: Text("いいえ"),
                                   isDestructiveAction: false,
                                   onPressed: (){
                                     Navigator.of(context).pop();
                                   },
+                                  child: Text("いいえ"),
                                 ),
                                 CupertinoDialogAction(
-                                  child: Text("はい"),
                                   isDestructiveAction: true,
                                   onPressed: (){
                                     _deleteEntry(index);
                                     Navigator.of(context).pop();
                                   },
+                                  child: Text("はい"),
                                   )
                               ],
                             )

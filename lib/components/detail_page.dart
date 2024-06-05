@@ -27,7 +27,9 @@ class DetailsPage extends StatelessWidget {
                     return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
                   }));
                 },
-                child: Image.file(File(entry['imagePath']!)),
+                child: entry['imagePath']?.startsWith('assets/images/') == true
+                  ? Image.asset(entry['imagePath']!)
+                  : Image.file(File(entry['imagePath']!)),
               ),
             SizedBox(height: 10),
             Text('講師名：${entry['teacherName']}', style: TextStyle(fontSize: 20)),

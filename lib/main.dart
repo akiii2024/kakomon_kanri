@@ -4,6 +4,7 @@ import 'components/home_page.dart';
 import 'components/setting_sub_page.dart';
 
 
+
 void main() async{
   await Hive.initFlutter();
   await Hive.openBox(boxName);

@@ -31,3 +31,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/card_after_training.png
+    - assets/images/en_example.jpg
+    - assets/images/jp_example.jpg
+    - assets/images/math_example.jpg
+    - assets/images/sci_example.png

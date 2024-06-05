@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setting_sub_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'setting_id_page.dart';
 
 
 
@@ -52,16 +53,15 @@ class _SettingPageState extends State<SettingPage> {
             title: Text('オプション3（未実装）'),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('オプション3が選択されました'),
-                ),
-              );
-              // オプション3の処理
-            },
-          ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SettingIdPage()),
+                );
+              },
+            ),
         ],
       ),
     );
   }
 }
+

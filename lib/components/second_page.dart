@@ -56,6 +56,7 @@ class _SecondPageState extends State<SecondPage> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -93,7 +94,8 @@ class _SecondPageState extends State<SecondPage> {
             TextField(
               controller: _teacherNameController,
               decoration: InputDecoration(
-                labelText: '講師名を入力してください（プルダウンメニュー置き換え予定）',
+                labelText: '講師名を入力してください',//プルダウンメニュー置き換え予定
+                hintText: '講師名',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -102,7 +104,8 @@ class _SecondPageState extends State<SecondPage> {
             TextField(
               controller: _classController,
               decoration: InputDecoration(
-                labelText: '授業名を入力してください（同じく置き換える予定）',
+                labelText: '授業名を入力してください',//プルダウンメニュー置き換え予定
+                hintText: '授業名',
                 border: OutlineInputBorder(),
               ),
             ),
