@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'components/home_page.dart';
-import 'components/setting_sub_page.dart';
+import 'pages/home_page.dart';
+import 'pages/setting_sub_page.dart';
 
 
 

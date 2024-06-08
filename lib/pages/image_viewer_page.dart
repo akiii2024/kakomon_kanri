@@ -1,3 +1,4 @@
+//画像をタップした際に表示される画像を拡大し見ることができるページです。
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';

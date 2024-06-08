@@ -1,11 +1,12 @@
+//一番最初に出てくるページです。すべてのハブとなり最初におすすめを表示する画面でもあります。
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:io';
-import 'second_page.dart';
+import 'reg_pastques.dart';
 import 'setting_page.dart';
 import 'detail_page.dart';
-import 'library_page.dart';
+import 'my_library_page.dart';
 import '../data/user_id.dart';
 
 const boxName = "aBox";

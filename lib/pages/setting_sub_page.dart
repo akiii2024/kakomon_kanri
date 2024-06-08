@@ -1,3 +1,4 @@
+//受講中の科目を設定できる画面です
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 

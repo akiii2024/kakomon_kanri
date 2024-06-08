@@ -1,4 +1,5 @@
-// lib/components/details_page.dart
+//home_pageやmy_libraryで項目をタップした際に表示されるページです。
+//現在my_libraryから参照するとindexがずれるため要修正
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'image_viewer_page.dart';

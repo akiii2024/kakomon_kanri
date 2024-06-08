@@ -1,8 +1,10 @@
+//自分で保存した過去問が参照できるページです。
+//おすすめ欄から好みの過去問も保存し、このページに表示できるようにする予定です。
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io';
-import 'second_page.dart';
+import 'reg_pastques.dart';
 
 import 'detail_page.dart';
 

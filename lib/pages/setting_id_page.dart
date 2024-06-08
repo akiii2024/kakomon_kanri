@@ -1,3 +1,4 @@
+//ユーザーidとユーザー名を設定できる画面です。（機能しません）
 import 'package:flutter/material.dart';
 
 class SettingIdPage extends StatefulWidget {

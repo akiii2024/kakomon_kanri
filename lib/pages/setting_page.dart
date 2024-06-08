@@ -1,3 +1,4 @@
+//設定のメイン画面です。
 import 'package:flutter/material.dart';
 import 'setting_sub_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
