@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
@@ -27,6 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState(){
     super.initState();
     _loadPastEntries();
+    //_loadCloudFire(); 有効にすると落ちる
     _initializePastEntries();
   }
 
@@ -92,6 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _pastEntries.add(result);
         _savePastEntries(); // リストに結果を追加
+        _saveCloudFire();
       });
     }
   }
@@ -101,6 +104,24 @@ class _MyHomePageState extends State<MyHomePage> {
       MaterialPageRoute(
         builder: (context) => DetailsPage(entry: _pastEntries[index])),
     );
+  }
+
+  Future<void> _saveCloudFire() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection('pastEntries').add({
+      'entries': _pastEntries
+    });
+  }
+
+  Future<void> _loadCloudFire() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot snapshot = await firestore.collection('pastEntries').get();
+
+    if (snapshot.docs.isNotEmpty) {
+      setState((){
+        _pastEntries = snapshot.docs.map((doc) => Map<String, String>.from(doc.data() as Map<String, dynamic>)).toList();
+      });
+    }
   }
 
   @override
@@ -173,7 +194,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
-                          title: Text("確認"),
+                          title: Text("確��"),
                           content: Text("本当に削除してよろしいですか？"),
                           actions:[
                             TextButton(
