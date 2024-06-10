@@ -27,8 +27,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState(){
     super.initState();
-    _loadPastEntries();
-    //_loadCloudFire(); 有効にすると落ちる
+    //_loadPastEntries();
+    _loadCloudFire(); // 有効にすると落ちる
     _initializePastEntries();
   }
 
@@ -93,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result != null) {
       setState(() {
         _pastEntries.add(result);
-        _savePastEntries(); // リストに結果を追加
+        //_savePastEntries(); // リストに結果を追加
         _saveCloudFire();
       });
     }
@@ -114,14 +114,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _loadCloudFire() async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot snapshot = await firestore.collection('pastEntries').get();
+    final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
 
-    if (snapshot.docs.isNotEmpty) {
-      setState((){
-        _pastEntries = snapshot.docs.map((doc) => Map<String, String>.from(doc.data() as Map<String, dynamic>)).toList();
-      });
+    for (var doc in snapshot.docs) {
+      print(doc.data().toString());
     }
+
+    setState(() {
+      _pastEntries = snapshot.docs.expand((doc) {
+        final data = doc.data();
+        final entries = data['entries'] as List<dynamic>;
+        return entries.map((entry) => {
+          'teacherName': entry['teacherName'] as String,
+          'className': entry['className'] as String,
+          'imagePath': entry['imagePath'] as String,
+          'dataSource': entry['dataSource'] as String,
+        });
+      }).toList();
+    });
   }
 
   @override
@@ -165,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ),
       body: _pastEntries.isEmpty
-          ? Center(child: Text('過去の入力はありません'))
+          ? Center(child: Text('過去���力はありません'))
           : Column(
         children: <Widget>[
           Expanded(
@@ -180,11 +190,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   child: ListTile(
-                    leading: imagePath != null
+                    leading: imagePath != null  && imagePath.isNotEmpty
                       ?(imagePath.startsWith('assets/images/')
                         ? Image.asset(imagePath)
-                        : Image.file(File(imagePath)))
-                      : null,
+                        : (File(imagePath).existsSync()
+                          ? Image.file(File(imagePath))
+                          : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png')))
+                      : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
                     title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                     subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                     trailing: IconButton(
@@ -194,7 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
-                          title: Text("確��"),
+                          title: Text("確認"),
                           content: Text("本当に削除してよろしいですか？"),
                           actions:[
                             TextButton(
