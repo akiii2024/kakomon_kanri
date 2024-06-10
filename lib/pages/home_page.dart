@@ -9,6 +9,7 @@ import 'setting_page.dart';
 import 'detail_page.dart';
 import 'my_library_page.dart';
 import '../data/user_id.dart';
+import 'login_page.dart';
 
 const boxName = "aBox";
 
@@ -146,7 +147,14 @@ class _MyHomePageState extends State<MyHomePage> {
             UserAccountsDrawerHeader(
               accountName: Text(userName),
               accountEmail: Text(userId),
-              currentAccountPicture: Icon(Icons.person),
+              currentAccountPicture: GestureDetector(
+                onTap: (){
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+              },
+              child: Icon(Icons.person),
+            ),
             ),
             ListTile(
               title: Text('Main Page'),
