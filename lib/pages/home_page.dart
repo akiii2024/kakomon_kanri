@@ -160,9 +160,29 @@ class _MyHomePageState extends State<MyHomePage> {
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
                 onTap: (){  
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
+              if (emailAddress == null || emailAddress!.isEmpty) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text("確認"),
+                    content: Text("ログアウトしますか？"),
+                    actions: [
+                      TextButton(
+                        child: Text("いいえ"),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      TextButton(
+                        child: Text("はい"),
+                        onPressed: () => FirebaseAuth.instance.signOut(),
+                      ),
+                    ],
+                  ),
+                );
+              }
               },
               child: Icon(Icons.person),
             ),
