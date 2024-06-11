@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
@@ -21,9 +22,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
-  String userId = UserID.currentUserId;
-  String userName = UserID.currentUserName;
-
+  //String userId = UserID.currentUserId;
+  //String userName = UserID.currentUserName;
+  String? emailAddress;
 
   @override
   void initState(){
@@ -31,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //_loadPastEntries();
     _loadCloudFire(); // 有効にすると落ちる
     _initializePastEntries();
+    _loadProfile();
   }
 
   void _initializePastEntries(){
@@ -135,6 +137,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> _loadProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        emailAddress = user.email;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,10 +156,10 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListView(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(userName),
-              accountEmail: Text(userId),
+              accountName: Text(emailAddress ?? ''),
+              accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
-                onTap: (){
+                onTap: (){  
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => LoginPage()),
               );
@@ -183,13 +194,14 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ),
       body: _pastEntries.isEmpty
-          ? Center(child: Text('過去���力はありません'))
+          ? Center(child: Text('過去力はありません'))
           : Column(
         children: <Widget>[
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
                 await _loadCloudFire();
+                await _loadProfile();
               },
               child: ListView.builder(
                 itemCount: _pastEntries.length,

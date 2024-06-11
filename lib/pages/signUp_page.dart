@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'home_page.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -14,18 +15,22 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _signUp() async {
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      final userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
+        //displayName: _usernameController.text,
       );
-      // ログイン成功時の処理
-      print("ログイン成功: ${userCredential.user?.email}");
     } on FirebaseAuthException catch (e) {
-      // エラーハンドリング
+      if (e.code == 'weak-password') {
+        print("弱いパスワードです。");
+      } else if (e.code == 'email-already-in-use') {
+        print("すでにメールアドレスが使用されています。");
+      }
+    } catch (e) {
       print("エラー: $e");
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +56,29 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _signUp,
+              onPressed: () async {
+                await _signUp();
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('登録完了'),
+                      content: Text('ユーザー登録が完了しました。'),
+                      actions: <Widget>[
+                        TextButton(
+                          child: Text('閉じる'),
+                          onPressed: () {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => MyHomePage()),
+                              (Route<dynamic> route) => false,
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
               child: Text('新規作成'),
             ),
           ],
