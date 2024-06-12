@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_page.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -20,6 +21,12 @@ class _SignUpPageState extends State<SignUpPage> {
         password: _passwordController.text,
         //displayName: _usernameController.text,
       );
+
+    await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set({
+      'email': _emailController.text,
+      'username': _usernameController.text,
+    });
+
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         print("弱いパスワードです。");

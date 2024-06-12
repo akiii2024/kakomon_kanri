@@ -9,7 +9,7 @@ import 'reg_pastques.dart';
 import 'setting_page.dart';
 import 'detail_page.dart';
 import 'my_library_page.dart';
-import '../data/user_id.dart';
+//import '../data/user_id.dart';
 import 'login_page.dart';
 
 const boxName = "aBox";
@@ -25,6 +25,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //String userId = UserID.currentUserId;
   //String userName = UserID.currentUserName;
   String? emailAddress;
+  String? username;
 
   @override
   void initState(){
@@ -116,6 +117,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  //Future<void> _uploadImage() async {
+    //final storage = FirebaseStorage.instance;
+    //final ref = storage.ref().child('images/${_pastEntries.length + 1}.jpg');
+    //final Uri downloadUrl = await ref.getDownloadURL();
+    //return downloadUrl.toString();
+  //}
+
   Future<void> _loadCloudFire() async {
     final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
 
@@ -140,9 +148,20 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      setState(() {
-        emailAddress = user.email;
-      });
+      QuerySnapshot userProfileSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+
+      if (userProfileSnapshot.docs.isNotEmpty) {
+        var userProfile = userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+        setState(() {
+          emailAddress = userProfile['email'];
+          username = userProfile['username'];
+          // 他のプロファイル情報もここで設定できます
+        });
+      }
     }
   }
 
@@ -156,7 +175,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListView(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(emailAddress ?? ''),
+              accountName: Text(username ?? ''),
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
                 onTap: (){  
@@ -177,7 +196,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       TextButton(
                         child: Text("はい"),
-                        onPressed: () => FirebaseAuth.instance.signOut(),
+                        onPressed: () {
+                          FirebaseAuth.instance.signOut();
+                          setState((){
+                          emailAddress = '';
+                          username = '';
+                          });
+                          Navigator.of(context).pushAndRemoveUntil  (
+                            MaterialPageRoute(builder: (context) => MyHomePage()),
+                            (Route<dynamic> route) => false
+                          );
+                        },
                       ),
                     ],
                   ),
