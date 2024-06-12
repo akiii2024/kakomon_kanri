@@ -12,6 +12,7 @@ class _LoginPageState extends State<LoginPage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String _loginMessage = "";
 
   Future<void> _login() async {
     try {
@@ -20,10 +21,12 @@ class _LoginPageState extends State<LoginPage> {
         password: _passwordController.text,
       );
       // ログイン成功時の処理
-      print("ログイン成功: ${userCredential.user?.email}");
+      _loginMessage = "ログイン成功: ${userCredential.user?.email}";
+      //print(_loginMessage);
     } on FirebaseAuthException catch (e) {
       // エラーハンドリング
-      print("エラー: $e");
+      _loginMessage = "ログイン失敗: $e";
+      //print(_loginMessage);
     }
   }
 
@@ -49,11 +52,87 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await _login();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
-                );
+                if (_emailController.text.isEmpty && _passwordController.text.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('ログイン失敗'),
+                        content: Text('メールアドレスとパスワードを入力してください。'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('閉じる'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    }
+                  );
+                } else if (_emailController.text.isEmpty && _passwordController.text.isNotEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('ログイン失敗'),
+                        content: Text('メールアドレスを入力してください。'),
+                      );
+                    },
+                  );
+                } else if (_emailController.text.isNotEmpty && _passwordController.text.isEmpty) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('ログイン失敗'),
+                        content: Text('パスワードを入力してください。'),
+                      );
+                    },
+                  );
+                } else {
+                  await _login();
+                  if (_loginMessage == "ログイン成功") {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('ログイン成功'),
+                          content: Text('ログインが完了しました。'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('閉じる'),
+                              onPressed: () {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(builder: (context) => MyHomePage()),
+                                  (Route<dynamic> route) => false,
+                                );
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }else{
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('ログイン失敗'),
+                          content: Text(_loginMessage),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('閉じる'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                }
               },
               child: Text('ログイン'),
             ),
@@ -68,7 +147,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Text('新規作成'),
             ),
           ],
-          
         ),
       ),
     );
