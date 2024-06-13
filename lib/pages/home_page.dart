@@ -2,12 +2,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
 import 'detail_page.dart';
 import 'my_library_page.dart';
-import '../data/user_id.dart';
+//import '../data/user_id.dart';
+import 'login_page.dart';
 
 const boxName = "aBox";
 
@@ -19,15 +22,18 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
-  String userId = UserID.currentUserId;
-  String userName = UserID.currentUserName;
-
+  //String userId = UserID.currentUserId;
+  //String userName = UserID.currentUserName;
+  String? emailAddress;
+  String? username;
 
   @override
   void initState(){
     super.initState();
-    _loadPastEntries();
+    //_loadPastEntries();
+    _loadCloudFire(); // 有効にすると落ちる
     _initializePastEntries();
+    _loadProfile();
   }
 
   void _initializePastEntries(){
@@ -91,7 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (result != null) {
       setState(() {
         _pastEntries.add(result);
-        _savePastEntries(); // リストに結果を追加
+        //_savePastEntries(); // リストに結果を追加
+        _saveCloudFire();
       });
     }
   }
@@ -101,6 +108,61 @@ class _MyHomePageState extends State<MyHomePage> {
       MaterialPageRoute(
         builder: (context) => DetailsPage(entry: _pastEntries[index])),
     );
+  }
+
+  Future<void> _saveCloudFire() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    await firestore.collection('pastEntries').add({
+      'entries': _pastEntries
+    });
+  }
+
+  //Future<void> _uploadImage() async {
+    //final storage = FirebaseStorage.instance;
+    //final ref = storage.ref().child('images/${_pastEntries.length + 1}.jpg');
+    //final Uri downloadUrl = await ref.getDownloadURL();
+    //return downloadUrl.toString();
+  //}
+
+  Future<void> _loadCloudFire() async {
+    final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
+
+    for (var doc in snapshot.docs) {
+      print(doc.data().toString());
+    }
+
+    setState(() {
+      _pastEntries = snapshot.docs.expand((doc) {
+        final data = doc.data();
+        final entries = data['entries'] as List<dynamic>;
+        return entries.map((entry) => {
+          'teacherName': entry['teacherName'] as String,
+          'className': entry['className'] as String,
+          'imagePath': entry['imagePath'] as String,
+          'dataSource': entry['dataSource'] as String,
+        });
+      }).toList();
+    });
+  }
+
+  Future<void> _loadProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot userProfileSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+
+      if (userProfileSnapshot.docs.isNotEmpty) {
+        var userProfile = userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+        setState(() {
+          emailAddress = userProfile['email'];
+          username = userProfile['username'];
+          // 他のプロファイル情報もここで設定できます
+        });
+      }
+    }
   }
 
   @override
@@ -113,9 +175,46 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListView(
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(userName),
-              accountEmail: Text(userId),
-              currentAccountPicture: Icon(Icons.person),
+              accountName: Text(username ?? ''),
+              accountEmail: Text(emailAddress ?? ''),
+              currentAccountPicture: GestureDetector(
+                onTap: (){  
+              if (emailAddress == null || emailAddress!.isEmpty) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text("確認"),
+                    content: Text("ログアウトしますか？"),
+                    actions: [
+                      TextButton(
+                        child: Text("いいえ"),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      TextButton(
+                        child: Text("はい"),
+                        onPressed: () {
+                          FirebaseAuth.instance.signOut();
+                          setState((){
+                          emailAddress = '';
+                          username = '';
+                          });
+                          Navigator.of(context).pushAndRemoveUntil  (
+                            MaterialPageRoute(builder: (context) => MyHomePage()),
+                            (Route<dynamic> route) => false
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              }
+              },
+              child: Icon(Icons.person),
+            ),
             ),
             ListTile(
               title: Text('Main Page'),
@@ -144,85 +243,93 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ),
       body: _pastEntries.isEmpty
-          ? Center(child: Text('過去の入力はありません'))
+          ? Center(child: Text('過去力はありません'))
           : Column(
         children: <Widget>[
           Expanded(
-            child: ListView.builder(
-              itemCount: _pastEntries.length,
-              itemBuilder: (context, index) {
-                var imagePath = _pastEntries[index]['imagePath'];
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(width: 1.0, color: Colors.grey),
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await _loadCloudFire();
+                await _loadProfile();
+              },
+              child: ListView.builder(
+                itemCount: _pastEntries.length,
+                itemBuilder: (context, index) {
+                  var imagePath = _pastEntries[index]['imagePath'];
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(width: 1.0, color: Colors.grey),
+                      ),
                     ),
-                  ),
-                  child: ListTile(
-                    leading: imagePath != null
-                      ?(imagePath.startsWith('assets/images/')
-                        ? Image.asset(imagePath)
-                        : Image.file(File(imagePath)))
-                      : null,
-                    title: Text('講師名：${_pastEntries[index]['teacherName']}'),
-                    subtitle: Text('授業名：${_pastEntries[index]['className']}'),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        if(Platform.isAndroid){
-                          showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: Text("確認"),
-                          content: Text("本当に削除してよろしいですか？"),
-                          actions:[
-                            TextButton(
-                              child: Text("いいえ"),
-                              onPressed: (){
-                                Navigator.of(context).pop();
-                              }),
+                    child: ListTile(
+                      leading: imagePath != null  && imagePath.isNotEmpty
+                        ?(imagePath.startsWith('assets/images/')
+                          ? Image.asset(imagePath)
+                          : (File(imagePath).existsSync()
+                            ? Image.file(File(imagePath))
+                            : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png')))
+                        : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
+                      title: Text('講師名：${_pastEntries[index]['teacherName']}'),
+                      subtitle: Text('授業名：${_pastEntries[index]['className']}'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () {
+                          if(Platform.isAndroid){
+                            showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: Text("確認"),
+                            content: Text("本当に削除してよろしいですか？"),
+                            actions:[
                               TextButton(
-                                child: Text("はい"),
+                                child: Text("いいえ"),
                                 onPressed: (){
-                                  _deleteEntry(index);
                                   Navigator.of(context).pop();
-                                },
-                                )
-                          ],
-                        )
-                      );
-                        }else{
-                          showDialog(
-                            context: context,
-                             builder: (_) => CupertinoAlertDialog(
-                              title: Text("確認"),
-                              content: Text("本当に削除してよろしいですか？"),
-                              actions: [
-                                CupertinoDialogAction(
-                                  child: Text("いいえ"),
-                                  isDestructiveAction: false,
-                                  onPressed: (){
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                                CupertinoDialogAction(
+                                }),
+                                TextButton(
                                   child: Text("はい"),
-                                  isDestructiveAction: true,
                                   onPressed: (){
                                     _deleteEntry(index);
                                     Navigator.of(context).pop();
                                   },
                                   )
-                              ],
-                            )
-                          );
+                            ],
+                          )
+                        );
+                          }else{
+                            showDialog(
+                              context: context,
+                               builder: (_) => CupertinoAlertDialog(
+                                title: Text("確認"),
+                                content: Text("本当に削除してよろしいですか？"),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: Text("いいえ"),
+                                    isDestructiveAction: false,
+                                    onPressed: (){
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  CupertinoDialogAction(
+                                    child: Text("はい"),
+                                    isDestructiveAction: true,
+                                    onPressed: (){
+                                      _deleteEntry(index);
+                                      Navigator.of(context).pop();
+                                    },
+                                    )
+                                ],
+                              )
+                            );
+                          }
                         }
-                      }
+                      ),
+                      onTap: () => _onEntryTap(index),
                     ),
-                    onTap: () => _onEntryTap(index),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ],

@@ -24,13 +24,21 @@ class DetailsPage extends StatelessWidget {
             if (entry['imagePath'] != null) 
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) {
-                    return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
-                  }));
+                  if(entry['imagePath']!.startsWith('assets/images/')){
+                    Navigator.push(context, MaterialPageRoute(builder: (_) {
+                      return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
+                    }));
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('画像が見つかりませんでした。'),
+                    ));
+                  }
                 },
                 child: entry['imagePath']?.startsWith('assets/images/') == true
                   ? Image.asset(entry['imagePath']!)
-                  : Image.file(File(entry['imagePath']!)),
+                  : (File(entry['imagePath']!).existsSync()
+                      ? Image.file(File(entry['imagePath']!))
+                      : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png')),
               ),
             SizedBox(height: 10),
             Text('講師名：${entry['teacherName']}', style: TextStyle(fontSize: 20)),

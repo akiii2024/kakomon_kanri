@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "417551754223",
+    "project_id": "kaomon-kanri",
+    "storage_bucket": "kaomon-kanri.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417551754223:android:fad25631a55d46ad9e0c1a",
+        "android_client_info": {
+          "package_name": "com.example.namer_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7mTelISpvjrIeQHHfqeDJPDK7h3cqOlQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
