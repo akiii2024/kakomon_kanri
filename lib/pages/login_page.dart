@@ -92,13 +92,13 @@ class _LoginPageState extends State<LoginPage> {
                   );
                 } else {
                   await _login();
-                  if (_loginMessage == "ログイン成功") {
+                  if (_loginMessage.startsWith("ログイン成功")) {
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: Text('ログイン成功'),
-                          content: Text('ログインが完了しました。'),
+                          content: Text('ログインに成功しました。'),
                           actions: <Widget>[
                             TextButton(
                               child: Text('閉じる'),
