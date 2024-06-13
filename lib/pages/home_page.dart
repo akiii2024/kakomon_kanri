@@ -114,8 +114,13 @@ class _MyHomePageState extends State<MyHomePage> {
   // クラウドにデータを保存するメソッド
   Future<void> _saveCloudFire() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore.collection('pastEntries').add({
-      'entries': _pastEntries
+    await firestore.collection('pastEntries').doc('pastEntriesList').set({
+      'entries': _pastEntries.map((entry) => {
+        'teacherName': entry['teacherName'],
+        'className': entry['className'],
+        'imagePath': entry['imagePath'],
+        'dataSource': entry['dataSource'],
+      }).toList(),
     });
   }
 
@@ -156,8 +161,10 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           emailAddress = userProfile['email'];
           username = userProfile['username'];
-          // 他のプロファイル情報もここで設定できます
         });
+      } else{
+        emailAddress = user.email;
+        username = 'undifined';
       }
     }
   }

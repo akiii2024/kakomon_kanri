@@ -110,7 +110,7 @@ class _SecondPageState extends State<SecondPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20), // テキストフィ���ルドと保存ボタン間のスペースを追加
+            SizedBox(height: 20), // テキストフィールドと保存ボタン間のスペースを追加
             Center(
               child: ElevatedButton(
                 onPressed: () {
