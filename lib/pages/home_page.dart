@@ -24,70 +24,69 @@ class _MyHomePageState extends State<MyHomePage> {
   final Box box = Hive.box(boxName);
   //String userId = UserID.currentUserId;
   //String userName = UserID.currentUserName;
-  String? emailAddress;
-  String? username;
+  String? emailAddress; // ユーザーのメールアドレス
+  String? username; // ユーザー名
 
   @override
   void initState(){
     super.initState();
     //_loadPastEntries();
-    _loadCloudFire(); // 有効にすると落ちる
-    _initializePastEntries();
-    _loadProfile();
+    _loadCloudFire(); 
+    _initializePastEntries(); // 過去の入力を初期化
+    _loadProfile(); // プロファイル情報を読み込む
   }
 
+  // 過去の入力を初期化するメソッド
   void _initializePastEntries(){
     if(_pastEntries.isEmpty){
-    _pastEntries.addAll([
-      //{
-      //'teacherName': '講師名',
-      //'className': '授業名',
-      //'imagePath': 'assets/images/card_after_training.png',
-      //'dataSource': 'assets',
-      //},
-      {
-      'teacherName': '田中先生',
-      'className': '英語',
-      'imagePath': 'assets/images/en_example.jpg',
-      'dataSource': 'assets',
-      },
-      {
-      'teacherName': '山田先生',
-      'className': '国語',
-      'imagePath': 'assets/images/jp_example.jpg',
-      'dataSource': 'assets',
-      },
-      {
-      'teacherName': '中田先生',
-      'className': '数学',
-      'imagePath': 'assets/images/math_example.jpg',
-      'dataSource': 'assets',
-      },
-    ]);
-    _savePastEntries();
+      _pastEntries.addAll([
+        {
+          'teacherName': '田中先生',
+          'className': '英語',
+          'imagePath': 'assets/images/en_example.jpg',
+          'dataSource': 'assets',
+        },
+        {
+          'teacherName': '山田先生',
+          'className': '国語',
+          'imagePath': 'assets/images/jp_example.jpg',
+          'dataSource': 'assets',
+        },
+        {
+          'teacherName': '中田先生',
+          'className': '数学',
+          'imagePath': 'assets/images/math_example.jpg',
+          'dataSource': 'assets',
+        },
+      ]);
+      _savePastEntries(); // 初期化したデータを保存
     }
   }
 
+  // 過去の入力を読み込むメソッド
   void _loadPastEntries(){
     final entries = box.get('pastEntries', defaultValue: []);
-    setState((){
+    setState(() {
       _pastEntries = List<Map<String, String>>.from(
         (entries as List).map((item) => Map<String, String>.from(item))
-    );
+      );
     });
   }
 
+  // 過去の入力を保存するメソッド
   void _savePastEntries(){
     box.put('pastEntries', _pastEntries);
   }
 
+  // 指定したインデックスの入力を削除するメソッド
   void _deleteEntry(int index){
     setState(() {
       _pastEntries.removeAt(index);
-      _savePastEntries();
+      _savePastEntries(); // 削除後のデータを保存
     });
   }
 
+  // 新しいページに遷移し、結果を受け取るメソッド
   void _navigateAndDisplaySelection(BuildContext context) async {
     final result = await Navigator.push(
       context,
@@ -98,18 +97,21 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _pastEntries.add(result);
         //_savePastEntries(); // リストに結果を追加
-        _saveCloudFire();
+        _saveCloudFire(); // クラウドに保存
       });
     }
   }
 
+  // 指定したインデックスの入力をタップしたときの処理
   void _onEntryTap(int index){
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DetailsPage(entry: _pastEntries[index])),
+        builder: (context) => DetailsPage(entry: _pastEntries[index])
+      ),
     );
   }
 
+  // クラウドにデータを保存するメソッド
   Future<void> _saveCloudFire() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection('pastEntries').add({
@@ -117,13 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  //Future<void> _uploadImage() async {
-    //final storage = FirebaseStorage.instance;
-    //final ref = storage.ref().child('images/${_pastEntries.length + 1}.jpg');
-    //final Uri downloadUrl = await ref.getDownloadURL();
-    //return downloadUrl.toString();
-  //}
-
+  // クラウドからデータを読み込むメソッド
   Future<void> _loadCloudFire() async {
     final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
 
@@ -145,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  // プロファイル情報を読み込むメソッド
   Future<void> _loadProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -179,42 +176,42 @@ class _MyHomePageState extends State<MyHomePage> {
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
                 onTap: (){  
-              if (emailAddress == null || emailAddress!.isEmpty) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text("確認"),
-                    content: Text("ログアウトしますか？"),
-                    actions: [
-                      TextButton(
-                        child: Text("いいえ"),
-                        onPressed: () => Navigator.of(context).pop(),
+                  if (emailAddress == null || emailAddress!.isEmpty) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: Text("確認"),
+                        content: Text("ログアウトしますか？"),
+                        actions: [
+                          TextButton(
+                            child: Text("いいえ"),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                          TextButton(
+                            child: Text("はい"),
+                            onPressed: () {
+                              FirebaseAuth.instance.signOut();
+                              setState((){
+                                emailAddress = '';
+                                username = '';
+                              });
+                              Navigator.of(context).pushAndRemoveUntil  (
+                                MaterialPageRoute(builder: (context) => MyHomePage()),
+                                (Route<dynamic> route) => false
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        child: Text("はい"),
-                        onPressed: () {
-                          FirebaseAuth.instance.signOut();
-                          setState((){
-                          emailAddress = '';
-                          username = '';
-                          });
-                          Navigator.of(context).pushAndRemoveUntil  (
-                            MaterialPageRoute(builder: (context) => MyHomePage()),
-                            (Route<dynamic> route) => false
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              }
-              },
-              child: Icon(Icons.person),
-            ),
+                    );
+                  }
+                },
+                child: Icon(Icons.person),
+              ),
             ),
             ListTile(
               title: Text('Main Page'),
