@@ -11,7 +11,6 @@ import 'detail_page.dart';
 import 'my_library_page.dart';
 //import '../data/user_id.dart';
 import 'login_page.dart';
-import 'signup_page.dart';
 
 const boxName = "aBox";
 
