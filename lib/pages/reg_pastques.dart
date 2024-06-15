@@ -1,6 +1,8 @@
 //過去問の登録ページです
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:io';
 
 class SecondPage extends StatefulWidget {
@@ -12,7 +14,9 @@ class _SecondPageState extends State<SecondPage> {
   final TextEditingController _teacherNameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  final Uuid uuid = Uuid();
   XFile? _image;
+  final List<Map<String, dynamic>> _pastEntries = []; // ここに追加
 
   @override
   void dispose() {
@@ -57,6 +61,20 @@ class _SecondPageState extends State<SecondPage> {
     }
   }
 
+  Future<void> _savePastEntry() async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    _pastEntries.add({
+      'id': uuid.v4(),
+      'teacherName': _teacherNameController.text,
+      'className': _classController.text,
+      'imagePath': _image!.path,
+      'dataSource': 'user',
+    });
+    await firestore.collection('pastEntries').doc('pastEntriesList').set({
+      'entries': _pastEntries,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +108,7 @@ class _SecondPageState extends State<SecondPage> {
             ),
             if (_image != null)
               Image.file(File(_image!.path)),
-            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペースを追加
+            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペース���追加
             Text('講師の名前'),
             TextField(
               controller: _teacherNameController,
@@ -110,17 +128,13 @@ class _SecondPageState extends State<SecondPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 20), // テキストフィ���ルドと保存ボタン間のスペースを追加
+            SizedBox(height: 20), // テキストフィルドと保存ボタン間のスペースを追加
             Center(
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty && _image != null) {
-                    Navigator.pop(context, {
-                      'teacherName': _teacherNameController.text,
-                      'className': _classController.text,
-                      'imagePath': _image!.path,
-                      'dataSource': 'user',
-                    });
+                    await _savePastEntry();
+                    Navigator.pop(context);
                   } else {
                     final snackBar = SnackBar(
                       content: Text('講師名、授業名、画像のすべてを入力してください。'),

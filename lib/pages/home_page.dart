@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
@@ -22,6 +23,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
+  final Uuid uuid = Uuid();
   //String userId = UserID.currentUserId;
   //String userName = UserID.currentUserName;
   String? emailAddress;
@@ -31,13 +33,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState(){
     super.initState();
     //_loadPastEntries();
-    _loadCloudFire(); // 有効にすると落ちる
+    _loadCloudFire();
     _initializePastEntries();
     _loadProfile();
   }
 
   void _initializePastEntries(){
-    if(_pastEntries.isEmpty){
+    if(_pastEntries.isEmpty){//将来的に消す予定
     _pastEntries.addAll([
       //{
       //'teacherName': '講師名',
@@ -112,8 +114,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> _saveCloudFire() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    await firestore.collection('pastEntries').add({
-      'entries': _pastEntries
+    await firestore.collection('pastEntries').doc('pastEntriesList').set({
+      'entries': _pastEntries.map((entry) => {
+        'id': uuid.v4(),
+        'teacherName': entry['teacherName'],
+        'className': entry['className'],
+        'imagePath': entry['imagePath'],
+        'dataSource': entry['dataSource'],
+      }).toList()
     });
   }
 
