@@ -163,8 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
           username = userProfile['username'];
         });
       } else{
-        emailAddress = user.email;
-        username = 'undifined';
+        setState(() {
+          emailAddress = user.email;
+          username = 'undefined';
+        });
       }
     }
   }
