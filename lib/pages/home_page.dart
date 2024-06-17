@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
@@ -11,6 +12,7 @@ import 'detail_page.dart';
 import 'my_library_page.dart';
 //import '../data/user_id.dart';
 import 'login_page.dart';
+import 'profile_page.dart';
 
 const boxName = "aBox";
 
@@ -22,6 +24,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
   final Box box = Hive.box(boxName);
+  final Uuid uuid = Uuid();
   //String userId = UserID.currentUserId;
   //String userName = UserID.currentUserName;
   String? emailAddress; // ユーザーのメールアドレス
@@ -31,35 +34,41 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState(){
     super.initState();
     //_loadPastEntries();
-    _loadCloudFire(); 
-    _initializePastEntries(); // 過去の入力を初期化
-    _loadProfile(); // プロファイル情報を読み込む
+    _loadCloudFire();
+    _initializePastEntries();
+    _loadProfile();
   }
 
   // 過去の入力を初期化するメソッド
   void _initializePastEntries(){
-    if(_pastEntries.isEmpty){
-      _pastEntries.addAll([
-        {
-          'teacherName': '田中先生',
-          'className': '英語',
-          'imagePath': 'assets/images/en_example.jpg',
-          'dataSource': 'assets',
-        },
-        {
-          'teacherName': '山田先生',
-          'className': '国語',
-          'imagePath': 'assets/images/jp_example.jpg',
-          'dataSource': 'assets',
-        },
-        {
-          'teacherName': '中田先生',
-          'className': '数学',
-          'imagePath': 'assets/images/math_example.jpg',
-          'dataSource': 'assets',
-        },
-      ]);
-      _savePastEntries(); // 初期化したデータを保存
+    if(_pastEntries.isEmpty){//将来的に消す予定
+    _pastEntries.addAll([
+      //{
+      //'teacherName': '講師名',
+      //'className': '授業名',
+      //'imagePath': 'assets/images/card_after_training.png',
+      //'dataSource': 'assets',
+      //},
+      {
+      'teacherName': '田中先生',
+      'className': '英語',
+      'imagePath': 'assets/images/en_example.jpg',
+      'dataSource': 'assets',
+      },
+      {
+      'teacherName': '山田先生',
+      'className': '国語',
+      'imagePath': 'assets/images/jp_example.jpg',
+      'dataSource': 'assets',
+      },
+      {
+      'teacherName': '中田先生',
+      'className': '数学',
+      'imagePath': 'assets/images/math_example.jpg',
+      'dataSource': 'assets',
+      },
+    ]);
+    _savePastEntries();
     }
   }
 
@@ -116,11 +125,12 @@ class _MyHomePageState extends State<MyHomePage> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection('pastEntries').doc('pastEntriesList').set({
       'entries': _pastEntries.map((entry) => {
+        'id': entry['id'],
         'teacherName': entry['teacherName'],
         'className': entry['className'],
         'imagePath': entry['imagePath'],
         'dataSource': entry['dataSource'],
-      }).toList(),
+      }).toList()
     });
   }
 
@@ -137,6 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
         final data = doc.data();
         final entries = data['entries'] as List<dynamic>;
         return entries.map((entry) => {
+          'id': entry['id'] as String,
           'teacherName': entry['teacherName'] as String,
           'className': entry['className'] as String,
           'imagePath': entry['imagePath'] as String,
@@ -185,42 +196,45 @@ class _MyHomePageState extends State<MyHomePage> {
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
                 onTap: (){  
-                  if (emailAddress == null || emailAddress!.isEmpty) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  } else {
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: Text("確認"),
-                        content: Text("ログアウトしますか？"),
-                        actions: [
-                          TextButton(
-                            child: Text("いいえ"),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                          TextButton(
-                            child: Text("はい"),
-                            onPressed: () {
-                              FirebaseAuth.instance.signOut();
-                              setState((){
-                                emailAddress = '';
-                                username = '';
-                              });
-                              Navigator.of(context).pushAndRemoveUntil  (
-                                MaterialPageRoute(builder: (context) => MyHomePage()),
-                                (Route<dynamic> route) => false
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-                child: Icon(Icons.person),
-              ),
+              if (emailAddress == null || emailAddress!.isEmpty) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              } else {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+                //showDialog(
+                  //context: context,
+                  //builder: (_) => AlertDialog(
+                  //title: Text("確認"),
+                  //content: Text("ログアウトしますか？"),
+                  //actions: [
+                  //TextButton(
+                  //child: Text("いいえ"),
+                  //onPressed: () => Navigator.of(context).pop(),
+                  //),
+                  //TextButton(
+                  //child: Text("はい"),
+                        //onPressed: () {
+                          //FirebaseAuth.instance.signOut();
+                          //setState((){
+                          //emailAddress = '';
+                          //username = '';
+                          //});
+                          //Navigator.of(context).pushAndRemoveUntil  (
+                            //MaterialPageRoute(builder: (context) => MyHomePage()),
+                            //(Route<dynamic> route) => false
+                          //);
+                        //},
+                  //),
+                  //],
+                  //),
+                //);
+              }
+              },
+              child: Icon(Icons.person),
+            ),
             ),
             ListTile(
               title: Text('Main Page'),
