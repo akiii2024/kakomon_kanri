@@ -131,10 +131,15 @@ class _SecondPageState extends State<SecondPage> {
             SizedBox(height: 20), // テキストフィルドと保存ボタン間のスペースを追加
             Center(
               child: ElevatedButton(
-                onPressed: () async {
+                onPressed: () {
                   if (_teacherNameController.text.isNotEmpty && _classController.text.isNotEmpty && _image != null) {
-                    await _savePastEntry();
-                    Navigator.pop(context);
+                    Navigator.pop(context, {
+                      'id': uuid.v4(),
+                      'teacherName': _teacherNameController.text,
+                      'className': _classController.text,
+                      'imagePath': _image!.path,
+                      'dataSource': 'user',
+                    });
                   } else {
                     final snackBar = SnackBar(
                       content: Text('講師名、授業名、画像のすべてを入力してください。'),

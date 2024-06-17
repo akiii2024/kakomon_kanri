@@ -116,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     await firestore.collection('pastEntries').doc('pastEntriesList').set({
       'entries': _pastEntries.map((entry) => {
-        'id': uuid.v4(),
+        'id': entry['id'],
         'teacherName': entry['teacherName'],
         'className': entry['className'],
         'imagePath': entry['imagePath'],
@@ -144,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
         final data = doc.data();
         final entries = data['entries'] as List<dynamic>;
         return entries.map((entry) => {
+          'id': entry['id'] as String,
           'teacherName': entry['teacherName'] as String,
           'className': entry['className'] as String,
           'imagePath': entry['imagePath'] as String,
