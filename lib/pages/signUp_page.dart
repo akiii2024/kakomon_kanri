@@ -87,6 +87,14 @@ class _SignUpPageState extends State<SignUpPage> {
                         return AlertDialog(
                           title: Text('エラー'),
                           content: Text(error.key),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('閉じる'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
                         );
                       },
                     );
