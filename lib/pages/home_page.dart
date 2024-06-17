@@ -12,6 +12,7 @@ import 'detail_page.dart';
 import 'my_library_page.dart';
 //import '../data/user_id.dart';
 import 'login_page.dart';
+import 'profile_page.dart';
 
 const boxName = "aBox";
 
@@ -193,33 +194,36 @@ class _MyHomePageState extends State<MyHomePage> {
                   MaterialPageRoute(builder: (context) => LoginPage()),
                 );
               } else {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    title: Text("確認"),
-                    content: Text("ログアウトしますか？"),
-                    actions: [
-                      TextButton(
-                        child: Text("いいえ"),
-                        onPressed: () => Navigator.of(context).pop(),
-                      ),
-                      TextButton(
-                        child: Text("はい"),
-                        onPressed: () {
-                          FirebaseAuth.instance.signOut();
-                          setState((){
-                          emailAddress = '';
-                          username = '';
-                          });
-                          Navigator.of(context).pushAndRemoveUntil  (
-                            MaterialPageRoute(builder: (context) => MyHomePage()),
-                            (Route<dynamic> route) => false
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
                 );
+                //showDialog(
+                  //context: context,
+                  //builder: (_) => AlertDialog(
+                  //title: Text("確認"),
+                  //content: Text("ログアウトしますか？"),
+                  //actions: [
+                  //TextButton(
+                  //child: Text("いいえ"),
+                  //onPressed: () => Navigator.of(context).pop(),
+                  //),
+                  //TextButton(
+                  //child: Text("はい"),
+                        //onPressed: () {
+                          //FirebaseAuth.instance.signOut();
+                          //setState((){
+                          //emailAddress = '';
+                          //username = '';
+                          //});
+                          //Navigator.of(context).pushAndRemoveUntil  (
+                            //MaterialPageRoute(builder: (context) => MyHomePage()),
+                            //(Route<dynamic> route) => false
+                          //);
+                        //},
+                  //),
+                  //],
+                  //),
+                //);
               }
               },
               child: Icon(Icons.person),
