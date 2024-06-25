@@ -13,6 +13,7 @@ class SecondPage extends StatefulWidget {
 class _SecondPageState extends State<SecondPage> {
   final TextEditingController _teacherNameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   final Uuid uuid = Uuid();
   XFile? _image;
@@ -67,6 +68,7 @@ class _SecondPageState extends State<SecondPage> {
       'id': uuid.v4(),
       'teacherName': _teacherNameController.text,
       'className': _classController.text,
+      'comment': _commentController.text,
       'imagePath': _image!.path,
       'dataSource': 'user',
     });
@@ -129,6 +131,16 @@ class _SecondPageState extends State<SecondPage> {
               ),
             ),
             SizedBox(height: 20), // テキストフィルドと保存ボタン間のスペースを追加
+            Text('コメント'),
+            TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                labelText: 'コメントを入力してください',
+                hintText: 'コメント',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -137,12 +149,13 @@ class _SecondPageState extends State<SecondPage> {
                       'id': uuid.v4(),
                       'teacherName': _teacherNameController.text,
                       'className': _classController.text,
+                      'comment': _commentController.text,
                       'imagePath': _image!.path,
                       'dataSource': 'user',
                     });
                   } else {
                     final snackBar = SnackBar(
-                      content: Text('講師名、授業名、画像のすべてを入力してください。'),
+                      content: Text('講師名、授業名、コメント、画像のすべてを入力してください。'),
                       duration: Duration(seconds: 2),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(snackBar);

@@ -52,18 +52,21 @@ class _MyHomePageState extends State<MyHomePage> {
       {
       'teacherName': '田中先生',
       'className': '英語',
+      'comment': 'こんにちは',
       'imagePath': 'assets/images/en_example.jpg',
       'dataSource': 'assets',
       },
       {
       'teacherName': '山田先生',
       'className': '国語',
+      'comment': 'こんにちは',
       'imagePath': 'assets/images/jp_example.jpg',
       'dataSource': 'assets',
       },
       {
       'teacherName': '中田先生',
       'className': '数学',
+      'comment': 'こんにちは',
       'imagePath': 'assets/images/math_example.jpg',
       'dataSource': 'assets',
       },
@@ -128,6 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
         'id': entry['id'],
         'teacherName': entry['teacherName'],
         'className': entry['className'],
+        'comment': entry['comment'],
         'imagePath': entry['imagePath'],
         'dataSource': entry['dataSource'],
       }).toList()
@@ -150,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'id': entry['id'] as String,
           'teacherName': entry['teacherName'] as String,
           'className': entry['className'] as String,
+          'comment': entry['comment'] as String,
           'imagePath': entry['imagePath'] as String,
           'dataSource': entry['dataSource'] as String,
         });
