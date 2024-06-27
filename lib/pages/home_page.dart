@@ -42,38 +42,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 過去の入力を初期化するメソッド
   void _initializePastEntries(){
-    if(_pastEntries.isEmpty){//将来的に消す予定
-    _pastEntries.addAll([
+    //if(_pastEntries.isEmpty){//将来的に消す予定
+    //_pastEntries.addAll([
       //{
       //'teacherName': '講師名',
       //'className': '授業名',
       //'imagePath': 'assets/images/card_after_training.png',
       //'dataSource': 'assets',
       //},
-      {
-      'teacherName': '田中先生',
-      'className': '英語',
-      'comment': 'こんにちは',
-      'imagePath': 'assets/images/en_example.jpg',
-      'dataSource': 'assets',
-      },
-      {
-      'teacherName': '山田先生',
-      'className': '国語',
-      'comment': 'こんにちは',
-      'imagePath': 'assets/images/jp_example.jpg',
-      'dataSource': 'assets',
-      },
-      {
-      'teacherName': '中田先生',
-      'className': '数学',
-      'comment': 'こんにちは',
-      'imagePath': 'assets/images/math_example.jpg',
-      'dataSource': 'assets',
-      },
-    ]);
+      //{
+      //'teacherName': '田中先生',
+      //'className': '英語',
+      //'imagePath': 'assets/images/en_example.jpg',
+      //'dataSource': 'assets',
+      //},
+      //{
+      // 'teacherName': '山田先生',
+      //'className': '国語',
+      //'imagePath': 'assets/images/jp_example.jpg',
+      //'dataSource': 'assets',
+      //},
+      //{
+      //'teacherName': '中田先生',
+      //'className': '数学',
+      //'imagePath': 'assets/images/math_example.jpg',
+      //'dataSource': 'assets',
+      //},
+    //]);
     _savePastEntries();
-    }
+    //}
   }
 
   // 過去の入力を読み込むメソッド
@@ -141,7 +138,6 @@ class _MyHomePageState extends State<MyHomePage> {
         'id': entry['id'],
         'teacherName': entry['teacherName'],
         'className': entry['className'],
-        'comment': entry['comment'],
         'imagePath': entry['imagePath'],
         'dataSource': entry['dataSource'],
       }).toList()
@@ -161,12 +157,12 @@ class _MyHomePageState extends State<MyHomePage> {
         final data = doc.data();
         final entries = data['entries'] as List<dynamic>;
         return entries.map((entry) => {
-          'id': entry['id'] as String,
-          'teacherName': entry['teacherName'] as String,
-          'className': entry['className'] as String,
-          'comment': entry['comment'] as String,
-          'imagePath': entry['imagePath'] as String,
-          'dataSource': entry['dataSource'] as String,
+          'id': entry['id'] as String? ?? '',
+          'teacherName': entry['teacherName'] as String? ?? '',
+          'className': entry['className'] as String? ?? '',
+          'comment': entry['comment'] as String? ?? '',
+          'imagePath': entry['imagePath'] as String? ?? '',
+          'dataSource': entry['dataSource'] as String? ?? '',
         });
       }).toList();
     });
@@ -325,58 +321,64 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                       subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                       trailing: IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: Icon(Icons.save),
                         onPressed: () {
-                          if(Platform.isAndroid){
-                            showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: Text("確認"),
-                            content: Text("本当に削除してよろしいですか？"),
-                            actions:[
-                              TextButton(
-                                child: Text("いいえ"),
-                                onPressed: (){
-                                  Navigator.of(context).pop();
-                                }),
-                                TextButton(
-                                  child: Text("はい"),
-                                  onPressed: (){
-                                    _deleteEntry(index);
-                                    Navigator.of(context).pop();
-                                  },
-                                  )
-                            ],
-                          )
-                        );
-                          }else{
-                            showDialog(
-                              context: context,
-                               builder: (_) => CupertinoAlertDialog(
-                                title: Text("確認"),
-                                content: Text("本当に削除してよろしいですか？"),
-                                actions: [
-                                  CupertinoDialogAction(
-                                    child: Text("いいえ"),
-                                    isDestructiveAction: false,
-                                    onPressed: (){
-                                      Navigator.of(context).pop();
-                                    },
-                                  ),
-                                  CupertinoDialogAction(
-                                    child: Text("はい"),
-                                    isDestructiveAction: true,
-                                    onPressed: (){
-                                      _deleteEntry(index);
-                                      Navigator.of(context).pop();
-                                    },
-                                    )
-                                ],
-                              )
-                            );
-                          }
-                        }
-                      ),
+                          _saveCloudFire();
+                        },
+                        ),
+                      //trailing: IconButton(
+                        //icon: Icon(Icons.delete),
+                        //onPressed: () {
+                          //if(Platform.isAndroid){
+                            //showDialog(
+                          //context: context,
+                          //builder: (_) => AlertDialog(
+                          //title: Text("確認"),
+                          //content: Text("本当に削除してよろしいですか？"),
+                          //actions:[
+                          //TextButton(
+                                //child: Text("いいえ"),
+                                //onPressed: (){
+                                  //Navigator.of(context).pop();
+                                //}),
+                                //TextButton(
+                                //child: Text("はい"),
+                                  //onPressed: (){
+                                    //_deleteEntry(index);
+                                    //Navigator.of(context).pop();
+                                  //},
+                                  //)
+                            //],
+                          //)
+                        //);
+                          //}else{
+                            //showDialog(
+                              //context: context,
+                               //builder: (_) => CupertinoAlertDialog(
+                                //title: Text("確認"),
+                                //content: Text("本当に削除してよろしいですか？"),
+                                //actions: [
+                                  //CupertinoDialogAction(
+                                    //child: Text("いいえ"),
+                                    //isDestructiveAction: false,
+                                    //onPressed: (){
+                                      //Navigator.of(context).pop();
+                                    //},
+                                  //),
+                                  //CupertinoDialogAction(
+                                    //child: Text("はい"),
+                                    //isDestructiveAction: true,
+                                    //onPressed: (){
+                                      //_deleteEntry(index);
+                                      //Navigator.of(context).pop();
+                                    //},
+                                    //)
+                                //],
+                              //)
+                            //);
+                          //}
+                        //}
+                      //),
                       onTap: () => _onEntryTap(index),
                     ),
                   );
