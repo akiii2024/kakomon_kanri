@@ -54,6 +54,8 @@ class DetailsPage extends StatelessWidget {
             Text('講師名：${entry['teacherName']}', style: TextStyle(fontSize: 20)),
             SizedBox(height: 10),
             Text('授業名：${entry['className']}', style: TextStyle(fontSize: 20)),
+            SizedBox(height: 10),
+            Text('コメント：${entry['comment']}', style: TextStyle(fontSize: 20)),
           ],
         ),
       ),
