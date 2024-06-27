@@ -28,6 +28,14 @@ class DetailsPage extends StatelessWidget {
                     Navigator.push(context, MaterialPageRoute(builder: (_) {
                       return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
                     }));
+                  }else if(entry['imagePath']!.startsWith('http')){
+                    Navigator.push(context, MaterialPageRoute(builder: (_) {
+                      return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
+                    }));
+                  }else if(File(entry['imagePath']!).existsSync()){
+                    Navigator.push(context, MaterialPageRoute(builder: (_) {
+                      return ImageViewPage(entry: {'imagePath': entry['imagePath']!});
+                    }));
                   }else{
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text('画像が見つかりませんでした。'),
@@ -38,7 +46,9 @@ class DetailsPage extends StatelessWidget {
                   ? Image.asset(entry['imagePath']!)
                   : (File(entry['imagePath']!).existsSync()
                       ? Image.file(File(entry['imagePath']!))
-                      : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png')),
+                      : (Uri.tryParse(entry['imagePath']!)?.isAbsolute == true
+                          ? Image.network(entry['imagePath']!)
+                          : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))),
               ),
             SizedBox(height: 10),
             Text('講師名：${entry['teacherName']}', style: TextStyle(fontSize: 20)),
@@ -50,4 +60,3 @@ class DetailsPage extends StatelessWidget {
     );
   }
 }
-

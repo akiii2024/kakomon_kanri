@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'reg_pastques.dart';
 import 'setting_page.dart';
@@ -103,10 +104,19 @@ class _MyHomePageState extends State<MyHomePage> {
     );
 
     if (result != null) {
+      String imageUrl = '';
+      if (result['imagePath'] != null && result['imagePath'].isNotEmpty) {
+        File imageFile = File(result['imagePath']);
+        imageUrl = await _uploadImage(imageFile);
+      }
+
       setState(() {
-        _pastEntries.add(result);
-        //_savePastEntries(); // リストに結果を追加
-        _saveCloudFire(); // クラウドに保存
+        _pastEntries.add({
+          ...result,
+          'imagePath': imageUrl,
+          'dataSource': 'cloud',
+        });
+        _saveCloudFire();
       });
     }
   }
@@ -179,6 +189,21 @@ class _MyHomePageState extends State<MyHomePage> {
           username = 'undefined';
         });
       }
+    }
+  }
+
+  Future<String> _uploadImage(File imageFile) async {
+    FirebaseStorage storage = FirebaseStorage.instance;
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    try {
+      Reference ref = storage.ref().child('images/$fileName');
+      UploadTask uploadTask = ref.putFile(imageFile);
+      TaskSnapshot taskSnapshot = await uploadTask;
+      String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      print('画像のアップロードエラー: $e');
+      return '';
     }
   }
 
@@ -283,12 +308,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     child: ListTile(
-                      leading: imagePath != null  && imagePath.isNotEmpty
-                        ?(imagePath.startsWith('assets/images/')
-                          ? Image.asset(imagePath)
-                          : (File(imagePath).existsSync()
-                            ? Image.file(File(imagePath))
-                            : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png')))
+                      leading: imagePath != null && imagePath.isNotEmpty
+                        ? (imagePath.startsWith('http')
+                          ? Image.network(imagePath)
+                          : (imagePath.startsWith('assets/')
+                            ? Image.asset(imagePath)
+                            : (File(imagePath).existsSync()
+                              ? Image.file(File(imagePath))
+                              : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))))
                         : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
                       title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                       subtitle: Text('授業名：${_pastEntries[index]['className']}'),

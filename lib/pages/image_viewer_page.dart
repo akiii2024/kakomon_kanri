@@ -21,8 +21,8 @@ class ImageViewPage extends StatelessWidget{
 
       body: Center(
         child: InteractiveViewer(
-          child: entry['imagePath'].startsWith('assets/images/')
-          ? Image.asset(entry['imagePath'])
+          child: entry['imagePath'].startsWith('http')
+          ? Image.network(entry['imagePath'])
           : Image.file(File(entry['imagePath']!)),
         ),
 
