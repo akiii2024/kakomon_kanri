@@ -9,6 +9,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  String _logoutMessage = '';
+
   Future<Map<String, String>> _loadProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -27,6 +29,19 @@ class _ProfilePageState extends State<ProfilePage> {
       }
     }
     return {};
+  }
+
+  Future<void> _updateProfile(Map<String, String> profileData) async {
+    await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).update(profileData);
+  }
+
+  Future<void> _logout() async {
+    try{
+      await FirebaseAuth.instance.signOut();
+      _logoutMessage = 'ログアウト成功';
+    } catch (e) {
+      _logoutMessage = 'ログアウトに失敗しました：$e';
+    }
   }
 
   @override
@@ -101,12 +116,20 @@ class _ProfilePageState extends State<ProfilePage> {
                     ListTile(
                       leading: Icon(Icons.logout),
                       title: Text('ログアウト'),
-                      onTap: () {
-                        FirebaseAuth.instance.signOut();
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => MyHomePage()),
-                          (Route<dynamic> route) => false,
-                        );
+                      onTap: () async {
+                        await _logout();
+                        if (_logoutMessage.startsWith('ログアウト成功')) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('ログアウト成功'),
+                              content: Text('正常にログアウトできました。'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('OK'))
+                              ],
+                            ),
+                          );
+                        }
                       },
                     ),
                   ],

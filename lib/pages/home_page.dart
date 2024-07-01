@@ -208,6 +208,15 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  String? _getEntryId(int index) {
+    if (index >= 0 && index < _pastEntries.length) {
+      return _pastEntries[index]['id'];
+    }
+    return null; // インデックスが範囲外の場合はnullを返す
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -321,11 +330,11 @@ class _MyHomePageState extends State<MyHomePage> {
                       title: Text('講師名：${_pastEntries[index]['teacherName']}'),
                       subtitle: Text('授業名：${_pastEntries[index]['className']}'),
                       trailing: IconButton(
-                        icon: Icon(Icons.save),
+                        icon: Icon(Icons.add),
                         onPressed: () {
                           _saveCloudFire();
                         },
-                        ),
+                      ),
                       //trailing: IconButton(
                         //icon: Icon(Icons.delete),
                         //onPressed: () {
