@@ -30,14 +30,19 @@ class _MyHomePageState extends State<MyHomePage> {
   //String userName = UserID.currentUserName;
   String? emailAddress; // ユーザーのメールアドレス
   String? username; // ユーザー名
+  String? loginState; // ログイン状態
 
   @override
   void initState(){
     super.initState();
-    //_loadPastEntries();
-    _loadCloudFire();
+    _initializeApp();
     _initializePastEntries();
-    _loadProfile();
+  }
+
+  Future<void> _initializeApp() async {
+    await _loadCloudFire();
+    await _loadProfile();
+    await _checkLoginState();
   }
 
   // 過去の入力を初期化するメソッド
@@ -215,7 +220,29 @@ class _MyHomePageState extends State<MyHomePage> {
     return null; // インデックスが範囲外の場合はnullを返す
   }
 
-  
+  Future <void> _saveMyLibrary(int index) async {
+    String? entryId = _getEntryId(index);
+    if(entryId != null){
+      await FirebaseFirestore.instance.collection('myLibrary').doc(emailAddress).update({
+        'entries': FieldValue.arrayUnion([
+        {
+        'id': entryId,
+        'teacherName': _pastEntries[index]['teacherName'],
+        'className': _pastEntries[index]['className'],
+        'imagePath': _pastEntries[index]['imagePath'],
+        'dataSource': _pastEntries[index]['dataSource'],
+      }
+      ]),
+      });
+    }
+  }
+
+  Future<void> _checkLoginState() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    setState(() {
+      loginState = (user != null) ? 'login' : 'notLogin';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -281,7 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text('保存した過去問'),
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LibraryPage()),
+                  MaterialPageRoute(builder: (context) => LibraryPage(emailAddress: emailAddress ?? '')),
                 );
               },
 
@@ -332,7 +359,27 @@ class _MyHomePageState extends State<MyHomePage> {
                       trailing: IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
-                          _saveCloudFire();
+                          if(loginState == 'login'){
+                            _saveMyLibrary(index);
+                          }else{
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text("ログインが必要です"),
+                                content: Text("この機能を使用するにはログインしてください。"),
+                                actions: [
+                                  TextButton(
+                                    child: Text("OK"),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          }
                         },
                       ),
                       //trailing: IconButton(
