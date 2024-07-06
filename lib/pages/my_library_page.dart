@@ -55,8 +55,12 @@ class _LibraryPageState extends State<LibraryPage> {
 
   void _deleteEntry(int index){
     setState(() {
-      _pastEntries.removeAt(index);
-      _savePastEntries();
+    String? entryId = _pastEntries[index]['id'];
+    if (entryId != null) {
+      FirebaseFirestore.instance.collection('myLibrary').doc(widget.emailAddress).update({
+        'entries': FieldValue.arrayRemove([_pastEntries[index]]),
+      });
+    }
     });
   }
 
