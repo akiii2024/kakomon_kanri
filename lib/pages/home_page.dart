@@ -47,35 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 過去の入力を初期化するメソッド
   void _initializePastEntries(){
-    //if(_pastEntries.isEmpty){//将来的に消す予定
-    //_pastEntries.addAll([
-      //{
-      //'teacherName': '講師名',
-      //'className': '授業名',
-      //'imagePath': 'assets/images/card_after_training.png',
-      //'dataSource': 'assets',
-      //},
-      //{
-      //'teacherName': '田中先生',
-      //'className': '英語',
-      //'imagePath': 'assets/images/en_example.jpg',
-      //'dataSource': 'assets',
-      //},
-      //{
-      // 'teacherName': '山田先生',
-      //'className': '国語',
-      //'imagePath': 'assets/images/jp_example.jpg',
-      //'dataSource': 'assets',
-      //},
-      //{
-      //'teacherName': '中田先生',
-      //'className': '数学',
-      //'imagePath': 'assets/images/math_example.jpg',
-      //'dataSource': 'assets',
-      //},
-    //]);
     _savePastEntries();
-    //}
   }
 
   // 過去の入力を読み込むメソッド

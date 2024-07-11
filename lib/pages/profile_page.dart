@@ -25,6 +25,8 @@ class _ProfilePageState extends State<ProfilePage> {
         return {
           'email': userProfile['email'],
           'username': userProfile['username'],
+          'department': userProfile['department'],
+          'grade': userProfile['grade'],
         };
       }
     }
@@ -42,6 +44,22 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       _logoutMessage = 'ログアウトに失敗しました：$e';
     }
+  }
+
+  Future<void> _showEditDialog(Map<String, String> profileData) async {
+    await showDialog(
+      context: context,
+      builder: (context) => ProfileEditDialog(profileData: profileData),
+    );
+    setState(() {}); // ダイアログが閉じた後に画面をリフレッシュ
+  }
+
+  Future<void> _showEditDepartmentDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => ProfileEditDepartmentDialog(),
+    );
+    setState(() {}); // ダイアログが閉じた後に画面をリフレッシュ
   }
 
   @override
@@ -97,19 +115,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     Divider(),
                     ListTile(
-                      leading: Icon(Icons.email),
-                      title: Text('Email'),
-                      subtitle: Text(profileData['email'] ?? ''),
+                      leading: Icon(Icons.school),
+                      title: Text('所属学部：${profileData['department']}'),
+                      subtitle: Text('学年：${profileData['grade']}回生'),
                     ),
                     Divider(),
                     ListTile(
                       leading: Icon(Icons.edit),
                       title: Text('プロフィールの編集'),
                       onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => ProfileEditDialog(profileData: profileData),
-                        );
+                        _showEditDialog(profileData);
+                      },
+                    ),
+                    Divider(),
+                    ListTile(
+                      leading: Icon(Icons.edit_document),
+                      title: Text('所属学部の編集'),
+                      onTap: () {
+                        _showEditDepartmentDialog();
                       },
                     ),
                     Divider(),
@@ -190,15 +213,95 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
                 return null;
               },
             ),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'メールアドレスを入力してください';
-                }
-                return null;
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('キャンセル'),
+        ),
+        TextButton(
+          onPressed: () async {
+            if (_formKey.currentState!.validate()) {
+              // Firestoreのユーザードキュメントを更新
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .update({
+                'username': _usernameController.text,
+              });
+
+              Navigator.of(context).pop();
+            }
+          },
+          child: Text('保存'),
+        ),
+      ],
+    );
+  }
+}
+
+class ProfileEditDepartmentDialog extends StatefulWidget {
+  @override
+  _ProfileEditDepartmentDialogState createState() => _ProfileEditDepartmentDialogState();
+}
+
+class _ProfileEditDepartmentDialogState extends State<ProfileEditDepartmentDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _departmentController;
+  late TextEditingController _gradeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _departmentController = TextEditingController();
+    _gradeController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _departmentController.dispose();
+    _gradeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('所属学部の編集'),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              items: [
+                DropdownMenuItem(value: '1', child: Text('１回生')),
+                DropdownMenuItem(value: '2', child: Text('２回生')),
+                DropdownMenuItem(value: '3', child: Text('３回生')),
+                DropdownMenuItem(value: '4', child: Text('４回生')),
+              ],
+              onChanged: (value) {
+                // 選択された値を処理する
+                _gradeController.text = value ?? '';
               },
+              decoration: InputDecoration(labelText: '学年を選択してください'),
+            ),
+            SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              items: [
+                DropdownMenuItem(value: '文学部', child: Text('文学部')),
+                DropdownMenuItem(value: '工学部', child: Text('工学部')),
+                DropdownMenuItem(value: '経済学部', child: Text('経済学部')),
+              ],
+              onChanged: (value) {
+                // 選択された値を処理する
+                _departmentController.text = value ?? '';
+              },
+              decoration: InputDecoration(labelText: '学部を選択してください'),
             ),
           ],
         ),
@@ -211,13 +314,20 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
           child: Text('キャンセル'),
         ),
         TextButton(
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
-              // プロファイル情報を更新する処理をここに追加
-              Navigator.of(context).pop();
+              // Firestoreのユーザードキュメントを更新
+              await FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .update({
+                'department': _departmentController.text,
+                'grade': _gradeController.text,
+              });
             }
+            Navigator.of(context).pop();
           },
-          child: Text('保存'),
+          child: Text('OK'),
         ),
       ],
     );
