@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SecondPage extends StatefulWidget {
   @override
@@ -18,6 +19,41 @@ class _SecondPageState extends State<SecondPage> {
   final Uuid uuid = Uuid();
   XFile? _image;
   final List<Map<String, dynamic>> _pastEntries = []; // ここに追加
+  String? _userEmail;
+  String? _userDepartment;
+
+  Future<Map<String, String>> _loadProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      QuerySnapshot userProfileSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .limit(1)
+          .get();
+
+      if (userProfileSnapshot.docs.isNotEmpty) {
+        var userProfile = userProfileSnapshot.docs.first.data() as Map<String, dynamic>;
+        return {
+          'email': userProfile['email'],
+          'username': userProfile['username'],
+          'department': userProfile['department'],
+          'grade': userProfile['grade'],
+        };
+      }
+    }
+    return {};
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile().then((profile) {
+      setState(() {
+        _userEmail = profile['email'];
+        _userDepartment = profile['department'];
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -71,6 +107,8 @@ class _SecondPageState extends State<SecondPage> {
       'comment': _commentController.text,
       'imagePath': _image!.path,
       'dataSource': 'user',
+      'userEmail': _userEmail, // 追加
+      'userDepartment': _userDepartment, // 追加
     });
     await firestore.collection('pastEntries').doc('pastEntriesList').set({
       'entries': _pastEntries,
@@ -110,7 +148,7 @@ class _SecondPageState extends State<SecondPage> {
             ),
             if (_image != null)
               Image.file(File(_image!.path)),
-            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペース���追加
+            SizedBox(height: 20), // 最初のテキストと入力フィールド間のスペース追加
             Text('講師の名前'),
             TextField(
               controller: _teacherNameController,
