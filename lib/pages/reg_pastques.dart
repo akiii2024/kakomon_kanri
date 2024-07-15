@@ -21,6 +21,7 @@ class _SecondPageState extends State<SecondPage> {
   final List<Map<String, dynamic>> _pastEntries = []; // ここに追加
   String? _userEmail;
   String? _userDepartment;
+  String? _userGrade;
 
   Future<Map<String, String>> _loadProfile() async {
     User? user = FirebaseAuth.instance.currentUser;
@@ -51,6 +52,7 @@ class _SecondPageState extends State<SecondPage> {
       setState(() {
         _userEmail = profile['email'];
         _userDepartment = profile['department'];
+        _userGrade = profile['grade'];
       });
     });
   }
@@ -109,6 +111,7 @@ class _SecondPageState extends State<SecondPage> {
       'dataSource': 'user',
       'userEmail': _userEmail, // 追加
       'userDepartment': _userDepartment, // 追加
+      'userGrade': _userGrade, // 追加
     });
     await firestore.collection('pastEntries').doc('pastEntriesList').set({
       'entries': _pastEntries,
@@ -190,6 +193,9 @@ class _SecondPageState extends State<SecondPage> {
                       'comment': _commentController.text,
                       'imagePath': _image!.path,
                       'dataSource': 'user',
+                      'userEmail': _userEmail,
+                      'userDepartment': _userDepartment,
+                      'userGrade': _userGrade,
                     });
                   } else {
                     final snackBar = SnackBar(

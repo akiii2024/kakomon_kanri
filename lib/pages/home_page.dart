@@ -117,6 +117,9 @@ class _MyHomePageState extends State<MyHomePage> {
         'className': entry['className'],
         'imagePath': entry['imagePath'],
         'dataSource': entry['dataSource'],
+        'userEmail': entry['userEmail'],
+        'userDepartment': entry['userDepartment'],
+        'userGrade': entry['userGrade'],
       }).toList()
     });
   }
