@@ -24,53 +24,24 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Map<String, String>> _pastEntries = []; // 過去の入力を保存するリスト
+  List<Map<String, String>> _filteredEntries = []; // フィルタリングされたリスト
   final Box box = Hive.box(boxName);
   final Uuid uuid = Uuid();
-  //String userId = UserID.currentUserId;
-  //String userName = UserID.currentUserName;
   String? emailAddress; // ユーザーのメールアドレス
   String? username; // ユーザー名
   String? loginState; // ログイン状態
+  String? userDepartment; // ユーザーの学部情報を保存する変数
 
   @override
   void initState(){
     super.initState();
     _initializeApp();
-    _initializePastEntries();
   }
 
   Future<void> _initializeApp() async {
     await _loadCloudFire();
     await _loadProfile();
     await _checkLoginState();
-  }
-
-  // 過去の入力を初期化するメソッド
-  void _initializePastEntries(){
-    _savePastEntries();
-  }
-
-  // 過去の入力を読み込むメソッド
-  void _loadPastEntries(){
-    final entries = box.get('pastEntries', defaultValue: []);
-    setState(() {
-      _pastEntries = List<Map<String, String>>.from(
-        (entries as List).map((item) => Map<String, String>.from(item))
-      );
-    });
-  }
-
-  // 過去の入力を保存するメソッド
-  void _savePastEntries(){
-    box.put('pastEntries', _pastEntries);
-  }
-
-  // 指定したインデックスの入力を削除するメソッド
-  void _deleteEntry(int index){
-    setState(() {
-      _pastEntries.removeAt(index);
-      _savePastEntries(); // 削除後のデータを保存
-    });
   }
 
   // 新しいページに遷移し、結果を受け取るメソッド
@@ -102,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onEntryTap(int index){
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => DetailsPage(entry: _pastEntries[index])
+        builder: (context) => DetailsPage(entry: _filteredEntries[index])
       ),
     );
   }
@@ -110,8 +81,23 @@ class _MyHomePageState extends State<MyHomePage> {
   // クラウドにデータを保存するメソッド
   Future<void> _saveCloudFire() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final snapshot = await firestore.collection('pastEntries').doc('pastEntriesList').get();
+    List<Map<String, String>> existingEntries = [];
+
+    if (snapshot.exists) {
+      final data = snapshot.data();
+      if (data != null && data['entries'] != null) {
+        existingEntries = List<Map<String, String>>.from(
+          (data['entries'] as List).map((item) => Map<String, String>.from(item))
+        );
+      }
+    }
+
+    // 新しいデータと既存のデータをマージ
+    existingEntries.addAll(_pastEntries);
+
     await firestore.collection('pastEntries').doc('pastEntriesList').set({
-      'entries': _pastEntries.map((entry) => {
+      'entries': existingEntries.map((entry) => {
         'id': entry['id'],
         'teacherName': entry['teacherName'],
         'className': entry['className'],
@@ -121,16 +107,12 @@ class _MyHomePageState extends State<MyHomePage> {
         'userDepartment': entry['userDepartment'],
         'userGrade': entry['userGrade'],
       }).toList()
-    });
+    }, SetOptions(merge: true)); // 既存のデータにマージ
   }
 
   // クラウドからデータを読み込むメソッド
   Future<void> _loadCloudFire() async {
     final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
-
-    for (var doc in snapshot.docs) {
-      print(doc.data().toString());
-    }
 
     setState(() {
       _pastEntries = snapshot.docs.expand((doc) {
@@ -143,8 +125,16 @@ class _MyHomePageState extends State<MyHomePage> {
           'comment': entry['comment'] as String? ?? '',
           'imagePath': entry['imagePath'] as String? ?? '',
           'dataSource': entry['dataSource'] as String? ?? '',
+          'userDepartment': entry['userDepartment'] as String? ?? '', // 学部情報を取得
         });
       }).toList();
+
+      // フィルタリング
+      if(userDepartment != null && userDepartment!.isNotEmpty){
+      _filteredEntries = _pastEntries.where((entry) {
+        return entry['userDepartment'] == userDepartment;
+        }).toList();
+      }
     });
   }
 
@@ -163,11 +153,13 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           emailAddress = userProfile['email'];
           username = userProfile['username'];
+          userDepartment = userProfile['department']; // 学部情報を取得
         });
       } else{
         setState(() {
           emailAddress = user.email;
           username = 'undefined';
+          userDepartment = 'undefined'; // 学部情報がない場合のデフォルト値
         });
       }
     }
@@ -241,33 +233,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) => ProfilePage()),
                 );
-                //showDialog(
-                  //context: context,
-                  //builder: (_) => AlertDialog(
-                  //title: Text("確認"),
-                  //content: Text("ログアウトしますか？"),
-                  //actions: [
-                  //TextButton(
-                  //child: Text("いいえ"),
-                  //onPressed: () => Navigator.of(context).pop(),
-                  //),
-                  //TextButton(
-                  //child: Text("はい"),
-                        //onPressed: () {
-                          //FirebaseAuth.instance.signOut();
-                          //setState((){
-                          //emailAddress = '';
-                          //username = '';
-                          //});
-                          //Navigator.of(context).pushAndRemoveUntil  (
-                            //MaterialPageRoute(builder: (context) => MyHomePage()),
-                            //(Route<dynamic> route) => false
-                          //);
-                        //},
-                  //),
-                  //],
-                  //),
-                //);
               }
               },
               child: Icon(Icons.person),
@@ -357,59 +322,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           }
                         },
                       ),
-                      //trailing: IconButton(
-                        //icon: Icon(Icons.delete),
-                        //onPressed: () {
-                          //if(Platform.isAndroid){
-                            //showDialog(
-                          //context: context,
-                          //builder: (_) => AlertDialog(
-                          //title: Text("確認"),
-                          //content: Text("本当に削除してよろしいですか？"),
-                          //actions:[
-                          //TextButton(
-                                //child: Text("いいえ"),
-                                //onPressed: (){
-                                  //Navigator.of(context).pop();
-                                //}),
-                                //TextButton(
-                                //child: Text("はい"),
-                                  //onPressed: (){
-                                    //_deleteEntry(index);
-                                    //Navigator.of(context).pop();
-                                  //},
-                                  //)
-                            //],
-                          //)
-                        //);
-                          //}else{
-                            //showDialog(
-                              //context: context,
-                               //builder: (_) => CupertinoAlertDialog(
-                                //title: Text("確認"),
-                                //content: Text("本当に削除してよろしいですか？"),
-                                //actions: [
-                                  //CupertinoDialogAction(
-                                    //child: Text("いいえ"),
-                                    //isDestructiveAction: false,
-                                    //onPressed: (){
-                                      //Navigator.of(context).pop();
-                                    //},
-                                  //),
-                                  //CupertinoDialogAction(
-                                    //child: Text("はい"),
-                                    //isDestructiveAction: true,
-                                    //onPressed: (){
-                                      //_deleteEntry(index);
-                                      //Navigator.of(context).pop();
-                                    //},
-                                    //)
-                                //],
-                              //)
-                            //);
-                          //}
-                        //}
-                      //),
                       onTap: () => _onEntryTap(index),
                     ),
                   );
