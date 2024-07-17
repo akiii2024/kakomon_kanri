@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'home_page.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -27,6 +29,7 @@ class _ProfilePageState extends State<ProfilePage> {
           'username': userProfile['username'],
           'department': userProfile['department'],
           'grade': userProfile['grade'],
+          'profileImageUrl': userProfile['profileImageUrl'] ?? '',
         };
       }
     }
@@ -74,9 +77,39 @@ class _ProfilePageState extends State<ProfilePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('エラーが発生しました'));
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text("エラーが発生しました"),
+                  content: Text("ログイン画面に移動します。"),
+                  actions: [
+                    TextButton(
+                      child: Text("OK"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _logout();
+                        Navigator.pushReplacementNamed(context, '/login');
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+            return Center(child: CircularProgressIndicator());
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('プロファイルが見つかりません'));
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text("エラーが発生しました"),
+                  content: Text("ログイン画面に移動します。"),
+                  actions: [
+                    TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('OK'))
+                  ],
+                );
+              },
+            );
           } else {
             var profileData = snapshot.data!;
             return Padding(
@@ -95,7 +128,12 @@ class _ProfilePageState extends State<ProfilePage> {
                           padding: const EdgeInsets.all(16.0),
                           child: CircleAvatar(
                             radius: 30.0,
-                            child: Icon(Icons.person, size: 30.0),
+                            backgroundImage: profileData['profileImageUrl'] != null && profileData['profileImageUrl']!.isNotEmpty
+                                ? NetworkImage(profileData['profileImageUrl']!)
+                                : null,
+                            child: profileData['profileImageUrl'] == null || profileData['profileImageUrl']!.isEmpty
+                                ? Icon(Icons.person, size: 30.0)
+                                : null,
                           ),
                         ),
                         Column(
@@ -160,6 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             );
           }
+          return SizedBox.shrink(); // 追加: デフォルトの戻り値
         },
       ),
     );
@@ -179,6 +218,20 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
+  File? _imageFile;
+
+  Future<String?> _uploadImage(File image) async {
+    try {
+      String fileName = 'profile_images/${FirebaseAuth.instance.currentUser!.uid}.jpg';
+      Reference storageReference = FirebaseStorage.instance.ref().child(fileName);
+      UploadTask uploadTask = storageReference.putFile(image);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      print('画像のアップロードに失敗しました: $e');
+      return null;
+    }
+  }
 
   @override
   void initState() {
@@ -194,26 +247,55 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
     super.dispose();
   }
 
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text('プロフィールの編集'),
       content: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'ユーザー名を入力してください';
-                }
-                return null;
-              },
-            ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'ユーザー名を入力してください';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 20),
+              _imageFile != null
+                  ? Image.file(_imageFile!, height: 100, width: 100)
+                  : widget.profileData['profileImageUrl'] != null && widget.profileData['profileImageUrl']!.isNotEmpty
+                      ? Image.network(widget.profileData['profileImageUrl']!, height: 100, width: 100)
+                      : Icon(Icons.person, size: 100),
+              TextButton(
+                onPressed: _pickImage,
+                child: Text('画像を選択'),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _imageFile = null;
+                  });
+                },
+                child: Text('デフォルトに戻す'),
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -226,12 +308,20 @@ class _ProfileEditDialogState extends State<ProfileEditDialog> {
         TextButton(
           onPressed: () async {
             if (_formKey.currentState!.validate()) {
+              String? imageUrl;
+              if (_imageFile != null) {
+                imageUrl = await _uploadImage(_imageFile!);
+              } else {
+                imageUrl = ''; // デフォルトに戻す場合は空文字列を設定
+              }
+
               // Firestoreのユーザードキュメントを更新
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(FirebaseAuth.instance.currentUser!.uid)
                   .update({
                 'username': _usernameController.text,
+                'profileImageUrl': imageUrl,
               });
 
               Navigator.of(context).pop();

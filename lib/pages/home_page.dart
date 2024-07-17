@@ -31,6 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String? username; // ユーザー名
   String? loginState; // ログイン状態
   String? userDepartment; // ユーザーの学部情報を保存する変数
+  String _searchQuery = ''; // 検索クエリを保存する変数
 
   @override
   void initState(){
@@ -39,8 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _initializeApp() async {
-    await _loadCloudFire();
     await _loadProfile();
+    await _loadCloudFire();
     await _checkLoginState();
   }
 
@@ -134,6 +135,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _filteredEntries = _pastEntries.where((entry) {
         return entry['userDepartment'] == userDepartment;
         }).toList();
+      }else{
+        _filteredEntries = _pastEntries;
       }
     });
   }
@@ -216,6 +219,17 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('あなたへのおすすめ'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: CustomSearchDelegate(_pastEntries), // 全体から検索
+              );
+            },
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -264,7 +278,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ]
         )
       ),
-      body: _pastEntries.isEmpty
+      body: _filteredEntries.isEmpty
           ? Center(child: Text('過去力はありません'))
           : Column(
         children: <Widget>[
@@ -275,9 +289,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 await _loadProfile();
               },
               child: ListView.builder(
-                itemCount: _pastEntries.length,
+                itemCount: _filteredEntries.length,
                 itemBuilder: (context, index) {
-                  var imagePath = _pastEntries[index]['imagePath'];
+                  var sortedEntries = List.from(_filteredEntries);
+                  sortedEntries.sort((a, b) => a['teacherName'].compareTo(b['teacherName']));
+                  var imagePath = sortedEntries[index]['imagePath'];
                   return Container(
                     decoration: BoxDecoration(
                       border: Border(
@@ -294,8 +310,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ? Image.file(File(imagePath))
                               : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))))
                         : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
-                      title: Text('講師名：${_pastEntries[index]['teacherName']}'),
-                      subtitle: Text('授業名：${_pastEntries[index]['className']}'),
+                      title: Text('授業名：${sortedEntries[index]['className']}'),
+                      subtitle: Text('講師名：${sortedEntries[index]['teacherName']}'),
                       trailing: IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
@@ -336,6 +352,104 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: '過去問の追加',
         child: Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class CustomSearchDelegate extends SearchDelegate {
+  final List<Map<String, String>> entries;
+
+  CustomSearchDelegate(this.entries);
+
+  @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+      IconButton(
+        icon: Icon(Icons.clear),
+        onPressed: () {
+          query = '';
+        },
+      ),
+    ];
+  }
+
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back),
+      onPressed: () {
+        close(context, null);
+      },
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = entries.where((entry) {
+      return entry['teacherName']!.toLowerCase().contains(query.toLowerCase()) ||
+             entry['className']!.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, index) {
+        var imagePath = results[index]['imagePath'];
+        return ListTile(
+          leading: imagePath != null && imagePath.isNotEmpty
+            ? (imagePath.startsWith('http')
+              ? Image.network(imagePath)
+              : (imagePath.startsWith('assets/')
+                ? Image.asset(imagePath)
+                : (File(imagePath).existsSync()
+                  ? Image.file(File(imagePath))
+                  : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))))
+            : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
+          title: Text('授業名：${results[index]['className']}'),
+          subtitle: Text('講師名：${results[index]['teacherName']}'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DetailsPage(entry: results[index]),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = entries.where((entry) {
+      return entry['teacherName']!.toLowerCase().contains(query.toLowerCase()) ||
+             entry['className']!.toLowerCase().contains(query.toLowerCase());
+    }).toList();
+
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (context, index) {
+        var imagePath = suggestions[index]['imagePath'];
+        return ListTile(
+          leading: imagePath != null && imagePath.isNotEmpty
+            ? (imagePath.startsWith('http')
+              ? Image.network(imagePath)
+              : (imagePath.startsWith('assets/')
+                ? Image.asset(imagePath)
+                : (File(imagePath).existsSync()
+                  ? Image.file(File(imagePath))
+                  : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))))
+            : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
+          title: Text('授業名：${suggestions[index]['className']}'),
+          subtitle: Text('講師名：${suggestions[index]['teacherName']}'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DetailsPage(entry: suggestions[index]),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
