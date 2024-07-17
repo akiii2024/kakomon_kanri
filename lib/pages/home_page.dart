@@ -32,6 +32,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String? loginState; // ログイン状態
   String? userDepartment; // ユーザーの学部情報を保存する変数
   String _searchQuery = ''; // 検索クエリを保存する変数
+  String? profileImageUrl; // プロフィール画像のURLを保存する変数
 
   @override
   void initState(){
@@ -157,12 +158,14 @@ class _MyHomePageState extends State<MyHomePage> {
           emailAddress = userProfile['email'];
           username = userProfile['username'];
           userDepartment = userProfile['department']; // 学部情報を取得
+          profileImageUrl = userProfile['profileImageUrl']; // プロフィール画像のURLを取得
         });
       } else{
         setState(() {
           emailAddress = user.email;
           username = 'undefined';
           userDepartment = 'undefined'; // 学部情報がない場合のデフォルト値
+          profileImageUrl = null; // プロフィール画像がない場合のデフォルト値
         });
       }
     }
@@ -238,19 +241,26 @@ class _MyHomePageState extends State<MyHomePage> {
               accountName: Text(username ?? ''),
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
-                onTap: (){  
-              if (emailAddress == null || emailAddress!.isEmpty) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              } else {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => ProfilePage()),
-                );
-              }
-              },
-              child: Icon(Icons.person),
-            ),
+                onTap: () {
+                  if (emailAddress == null || emailAddress!.isEmpty) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => ProfilePage()),
+                    );
+                  }
+                },
+                child: CircleAvatar(
+                  backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
+                      ? NetworkImage(profileImageUrl!)
+                      : null,
+                  child: profileImageUrl == null || profileImageUrl!.isEmpty
+                      ? Icon(Icons.person, size: 50)
+                      : null,
+                ),
+              ),
             ),
             ListTile(
               title: Text('Main Page'),
