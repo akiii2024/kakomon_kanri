@@ -31,8 +31,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String? username; // ユーザー名
   String? loginState; // ログイン状態
   String? userDepartment; // ユーザーの学部情報を保存する変数
-  String _searchQuery = ''; // 検索クエリを保存する変数
   String? profileImageUrl; // プロフィール画像のURLを保存する変数
+  String _searchQuery = ''; // 検索クエリを保存する変数
 
   @override
   void initState(){
@@ -165,7 +165,6 @@ class _MyHomePageState extends State<MyHomePage> {
           emailAddress = user.email;
           username = 'undefined';
           userDepartment = 'undefined'; // 学部情報がない場合のデフォルト値
-          profileImageUrl = null; // プロフィール画像がない場合のデフォルト値
         });
       }
     }
@@ -241,26 +240,26 @@ class _MyHomePageState extends State<MyHomePage> {
               accountName: Text(username ?? ''),
               accountEmail: Text(emailAddress ?? ''),
               currentAccountPicture: GestureDetector(
-                onTap: () {
-                  if (emailAddress == null || emailAddress!.isEmpty) {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
-                  } else {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => ProfilePage()),
-                    );
-                  }
-                },
-                child: CircleAvatar(
-                  backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                      ? NetworkImage(profileImageUrl!)
-                      : null,
-                  child: profileImageUrl == null || profileImageUrl!.isEmpty
-                      ? Icon(Icons.person, size: 50)
-                      : null,
-                ),
+                onTap: (){  
+              if (emailAddress == null || emailAddress!.isEmpty) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              } else {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => ProfilePage()),
+                );
+              }
+              },
+              child: CircleAvatar(
+                backgroundImage: (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+                                ? NetworkImage(profileImageUrl!)
+                                : null,
+                child: (profileImageUrl == null || profileImageUrl!.isEmpty)
+                    ? Icon(Icons.person, size: 30.0)
+                    : null,
               ),
+            ),
             ),
             ListTile(
               title: Text('Main Page'),
@@ -320,8 +319,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               ? Image.file(File(imagePath))
                               : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'))))
                         : Image.asset('assets/images/Question-Mark-PNG-Transparent-Image.png'),
-                      title: Text('授業名：${sortedEntries[index]['className']}'),
-                      subtitle: Text('講師名：${sortedEntries[index]['teacherName']}'),
+                      title: Text('授業名：${sortedEntries[index]['className']}'), // 授業名を上に
+                      subtitle: Text('講師名：${sortedEntries[index]['teacherName']}'), // 講師名を下に
                       trailing: IconButton(
                         icon: Icon(Icons.add),
                         onPressed: () {
