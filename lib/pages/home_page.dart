@@ -127,10 +127,9 @@ class _MyHomePageState extends State<MyHomePage> {
           'comment': entry['comment'] as String? ?? '',
           'imagePath': entry['imagePath'] as String? ?? '',
           'dataSource': entry['dataSource'] as String? ?? '',
-          'userDepartment': entry['userDepartment'] as String? ?? '',
-          'goodCount': (entry['goodCount'] as int? ?? 0).toString(), // 文字列に変換
-        }).toList();
-      }).toList().cast<Map<String, String>>(); // キャスト
+          'userDepartment': entry['userDepartment'] as String? ?? '', // 学部情報を取得
+        });
+      }).toList();
 
       // フィルタリング
       if(userDepartment != null && userDepartment!.isNotEmpty){
@@ -289,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ),
       body: _filteredEntries.isEmpty
-          ? Center(child: Text('過去力はありません'))
+          ? Center(child: Text('過去問はありません'))
           : Column(
         children: <Widget>[
           Expanded(
@@ -302,7 +301,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemCount: _filteredEntries.length,
                 itemBuilder: (context, index) {
                   var sortedEntries = List.from(_filteredEntries);
-                  sortedEntries.sort((a, b) => b['goodCount'].compareTo(a['goodCount'])); // 追加: グッドカウントでソート
+                  sortedEntries.sort((a, b) => a['teacherName'].compareTo(b['teacherName']));
                   var imagePath = sortedEntries[index]['imagePath'];
                   return Container(
                     decoration: BoxDecoration(
