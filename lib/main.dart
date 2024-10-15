@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: '過去問管理（仮）',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primarySwatch: Colors.blue,
       ),
       darkTheme: ThemeData(brightness: Brightness.dark),
       localizationsDelegates: [
