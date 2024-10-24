@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import "package:firebase_auth/firebase_auth.dart";
 import 'firebase_options.dart';
 import 'pages/home_page.dart';
 import 'pages/setting_sub_page.dart';
+import 'pages/welcome_page.dart';
 
 
 
@@ -38,8 +40,21 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [
         Locale('ja', 'JP'),
       ],
-      home: MyHomePage(),
+      home: _handleAuthState(),
       debugShowCheckedModeBanner: false,
+    );
+  }
+
+  Widget _handleAuthState() {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return MyHomePage();
+        } else {
+          return WelcomePage();
+        }
+      },
     );
   }
 }
