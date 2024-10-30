@@ -2,10 +2,8 @@
 //おすすめ欄から好みの過去問も保存し、このページに表示できるようにする予定です。
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:io';
 import 'reg_pastques.dart';
 
 import 'detail_page.dart';
@@ -155,9 +153,8 @@ class _LibraryPageState extends State<LibraryPage> {
                     subtitle: Text('授業名: ${userEntries[index]["className"]}'),
                     trailing: IconButton(
                     icon: Icon(Icons.delete),
-                    onPressed: (() {
-                      if(Platform.isAndroid){
-                          showDialog(
+                    onPressed: () {
+                      showDialog(
                         context: context,
                         builder: (_) => AlertDialog(
                           title: Text("確認"),
@@ -178,34 +175,7 @@ class _LibraryPageState extends State<LibraryPage> {
                           ],
                         )
                       );
-                        }else{
-                          showDialog(
-                            context: context,
-                             builder: (_) => CupertinoAlertDialog(
-                              title: Text("確認"),
-                              content: Text("本当に削除してよろしいですか？"),
-                              actions: [
-                                CupertinoDialogAction(
-                                  isDestructiveAction: false,
-                                  onPressed: (){
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("いいえ"),
-                                ),
-                                CupertinoDialogAction(
-                                  isDestructiveAction: true,
-                                  onPressed: (){
-                                    _deleteEntry(index);
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("はい"),
-                                  )
-                              ],
-                            )
-                          );
-                        }
-                      }
-                    ),
+                    },
                     ),
                     onTap: () => _onEntryTap(index),
                   ),
