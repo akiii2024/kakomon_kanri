@@ -116,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _loadCloudFire() async {
     final snapshot = await FirebaseFirestore.instance.collection('pastEntries').get();
 
+    if(mounted){
     setState(() {
       _pastEntries = snapshot.docs.expand((doc) {
         final data = doc.data();
@@ -140,6 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
         _filteredEntries = _pastEntries;
       }
     });
+    }
   }
 
   // プロファイル情報を読み込むメソッド
