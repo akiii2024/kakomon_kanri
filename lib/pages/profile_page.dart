@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-
+import 'welcome_page.dart';
 class ProfilePage extends StatefulWidget {
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -186,7 +186,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               title: Text('ログアウト成功'),
                               content: Text('正常にログアウトできました。'),
                               actions: [
-                                TextButton(onPressed: () => Navigator.of(context).pop(), child: Text('OK'))
+                                TextButton(onPressed: () => Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => WelcomePage()), (route) => false), child: Text('OK'))
                               ],
                             ),
                           );
